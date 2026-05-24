@@ -12,7 +12,7 @@ export const ProviderConfigSchema = z.object({
 export const AgentConfigSchema = z.object({
   name: z.string(),
   description: z.string(),
-  provider: z.string(),
+  provider: z.string().optional(),
   model: z.string().optional(),
   systemPrompt: z.string(),
   skills: z.array(z.string()).optional(),

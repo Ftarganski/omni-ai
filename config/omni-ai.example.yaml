@@ -1,13 +1,13 @@
 version: "1"
 
-# Provedor padrão quando nenhum é especificado no agente
+# Active provider — all agents use this unless they declare their own
 defaultProvider: anthropic
 
 providers:
   - name: anthropic
     type: anthropic
     apiKey: ${ANTHROPIC_API_KEY}
-    defaultModel: claude-sonnet-4-6
+    defaultModel: claude-sonnet-4-6   # model used when agents don't specify one
 
   - name: openai
     type: openai
@@ -20,11 +20,17 @@ providers:
     baseUrl: https://api.githubcopilot.com
     defaultModel: gpt-4o
 
+# ── Inheritance rules ────────────────────────────────────────────────────────
+# agent.provider missing  →  uses defaultProvider above
+# agent.model missing     →  uses defaultModel of the resolved provider
+# agent.provider present  →  overrides defaultProvider for that agent only
+# agent.model present     →  overrides defaultModel for that agent only
+# ─────────────────────────────────────────────────────────────────────────────
+
 agents:
+  # Minimal agent — inherits provider and model from defaults above
   - name: code-reviewer
     description: Reviews code for quality, bugs, and security issues
-    provider: anthropic
-    model: claude-sonnet-4-6
     systemPrompt: |
       You are an expert code reviewer. Analyze the provided code and give
       actionable feedback on quality, potential bugs, security vulnerabilities,
@@ -34,10 +40,11 @@ agents:
       - search-code
     maxIterations: 5
 
+  # Agent with explicit provider override
   - name: doc-writer
     description: Generates documentation for code
-    provider: openai
-    model: gpt-4o
+    provider: openai          # overrides defaultProvider for this agent only
+    model: gpt-4o-mini        # overrides defaultModel for this agent only
     systemPrompt: |
       You are a technical writer specialized in developer documentation.
       Generate clear, concise, and comprehensive documentation.

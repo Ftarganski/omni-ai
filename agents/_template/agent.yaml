@@ -1,7 +1,7 @@
 name: my-agent
 description: What this agent does
-provider: anthropic          # must match a provider name in config
-model: claude-sonnet-4-6     # optional, uses provider default if omitted
+# provider: my-provider       # optional — inherits defaultProvider from omni-ai.yaml
+# model: my-model             # optional — inherits defaultModel from the provider config
 systemPrompt: |
   You are a helpful assistant specialized in...
   Describe the agent's role, constraints, and expected behavior here.

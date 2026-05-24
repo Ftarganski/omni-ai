@@ -95,7 +95,7 @@ export interface ISkill<TInput = unknown, TOutput = unknown> {
 export interface AgentConfig {
   name: string;
   description: string;
-  provider: string;
+  provider?: string;
   model?: string;
   systemPrompt: string;
   skills?: string[];

@@ -1,9 +1,64 @@
+# ── Dependencies ──────────────────────────────────────────────────────────────
 node_modules/
+.pnpm-store/
+
+# ── Build output ───────────────────────────────────────────────────────────────
 dist/
+build/
+out/
+*.tsbuildinfo
+
+# ── Environment & secrets ──────────────────────────────────────────────────────
 .env
 .env.local
 .env.*.local
+.env.production
+.env.staging
+
+# Runtime config (created from omni-ai.example.yaml — may contain API keys)
+config/omni-ai.yaml
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
 *.log
-.DS_Store
-.turbo/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+
+# ── Test & coverage ────────────────────────────────────────────────────────────
 coverage/
+.nyc_output/
+
+# ── Caches & tools ─────────────────────────────────────────────────────────────
+.turbo/
+.cache/
+.eslintcache
+.prettiercache
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# Keep .vscode/extensions.json and .vscode/launch.json but ignore settings with secrets
+.vscode/settings.json
+
+# ── Temporary ─────────────────────────────────────────────────────────────────
+tmp/
+temp/
+*.tmp
+*.bak
+
