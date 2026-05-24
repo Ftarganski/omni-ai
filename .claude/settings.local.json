@@ -1,0 +1,31 @@
+﻿{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:platform.openai.com)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git pull *)",
+      "Bash(git branch *)",
+      "Bash(git remote *)",
+      "PowerShell(git *)",
+      "Bash(gh api *)",
+      "Bash(gh repo *)",
+      "Bash(gh pr *)",
+      "Bash(gh issue *)",
+      "Bash(pnpm *)",
+      "Bash(node *)",
+      "Bash(npx *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\conta\\.claude\\projects\\e--Desenvolvedor-Full-Stack-Works-omni-ai\\memory"
+    ]
+  }
+}
