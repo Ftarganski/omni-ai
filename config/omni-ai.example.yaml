@@ -1,0 +1,44 @@
+version: "1"
+
+# Provedor padrão quando nenhum é especificado no agente
+defaultProvider: anthropic
+
+providers:
+  - name: anthropic
+    type: anthropic
+    apiKey: ${ANTHROPIC_API_KEY}
+    defaultModel: claude-sonnet-4-6
+
+  - name: openai
+    type: openai
+    apiKey: ${OPENAI_API_KEY}
+    defaultModel: gpt-4o
+
+  - name: copilot
+    type: copilot
+    apiKey: ${GITHUB_TOKEN}
+    baseUrl: https://api.githubcopilot.com
+    defaultModel: gpt-4o
+
+agents:
+  - name: code-reviewer
+    description: Reviews code for quality, bugs, and security issues
+    provider: anthropic
+    model: claude-sonnet-4-6
+    systemPrompt: |
+      You are an expert code reviewer. Analyze the provided code and give
+      actionable feedback on quality, potential bugs, security vulnerabilities,
+      and performance issues.
+    skills:
+      - read-file
+      - search-code
+    maxIterations: 5
+
+  - name: doc-writer
+    description: Generates documentation for code
+    provider: openai
+    model: gpt-4o
+    systemPrompt: |
+      You are a technical writer specialized in developer documentation.
+      Generate clear, concise, and comprehensive documentation.
+    maxIterations: 3

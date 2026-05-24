@@ -1,0 +1,11 @@
+name: my-agent
+description: What this agent does
+provider: anthropic          # must match a provider name in config
+model: claude-sonnet-4-6     # optional, uses provider default if omitted
+systemPrompt: |
+  You are a helpful assistant specialized in...
+  Describe the agent's role, constraints, and expected behavior here.
+skills:
+  - skill-name               # skills the agent can use (must be registered)
+maxIterations: 10
+temperature: 0.3
