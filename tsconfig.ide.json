@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@omni-ai/core": ["packages/core/src/index.ts"],
+      "@omni-ai/memory": ["packages/memory/src/index.ts"],
+      "@omni-ai/provider-anthropic": ["packages/provider-anthropic/src/index.ts"],
+      "@omni-ai/provider-openai": ["packages/provider-openai/src/index.ts"],
+      "@omni-ai/skills-fs": ["packages/skills-fs/src/index.ts"],
+      "@omni-ai/skills-code": ["packages/skills-code/src/index.ts"],
+      "@omni-ai/skills-ux": ["packages/skills-ux/src/index.ts"],
+      "@omni-ai/cli": ["packages/cli/src/bin.ts"]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*.ts"
+  ],
+  "exclude": ["node_modules", "packages/*/dist"]
+}
