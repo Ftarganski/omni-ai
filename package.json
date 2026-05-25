@@ -11,7 +11,8 @@
     "dev": "pnpm -r dev",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "omni": "node packages/cli/dist/bin.js"
   },
   "devDependencies": {
     "typescript": "^5.7.0",

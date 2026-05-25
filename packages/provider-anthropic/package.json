@@ -1,7 +1,7 @@
 {
-  "name": "@omni-ai/core",
+  "name": "@omni-ai/provider-anthropic",
   "version": "0.1.0",
-  "description": "Core abstractions for omni-ai framework",
+  "description": "Anthropic Claude provider adapter for omni-ai",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -17,12 +17,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "zod": "^3.24.0",
-    "yaml": "^2.7.0",
-    "glob": "^11.0.0"
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@omni-ai/core": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.7.0",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
   }
 }

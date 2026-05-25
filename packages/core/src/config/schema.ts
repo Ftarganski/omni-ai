@@ -24,6 +24,7 @@ export const OmniAiConfigSchema = z.object({
   version: z.string().default("1"),
   providers: z.array(ProviderConfigSchema),
   defaultProvider: z.string(),
+  agentsDir: z.string().default("agents"),
   agents: z.array(AgentConfigSchema).optional(),
 });
 
