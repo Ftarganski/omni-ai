@@ -11,14 +11,16 @@ It provides `IProvider`, `ISkill`, and `IAgent` interfaces so that agents can be
 
 ```
 packages/core/          @omni-ai/core — interfaces, registry, Zod config schema
-packages/skills-fs/     @omni-ai/skills-fs — read-file, write-file, list-directory
-packages/skills-code/   @omni-ai/skills-code — search-code
-packages/skills-ux/     @omni-ai/skills-ux — audit-accessibility
+packages/provider-*/    Provider adapters (anthropic, openai) — compiled npm packages
+packages/skills-*/      Skill packages (fs, code, ux) — compiled npm packages
+packages/memory/        @omni-ai/memory — session stores and compactors
+packages/cli/           @omni-ai/cli — `omni` CLI binary
 agents/backend/         NestJS backend agent definitions (7 agents)
 agents/frontend/        React/TypeScript frontend agent definitions (5 agents)
 agents/ux/              UX implementation agents (5 agents)
 agents/qa/              QA validation agents (4 agents)
-providers/              Provider setup guides (anthropic, openai, copilot)
+docs/providers/         Provider setup guides (anthropic.md, openai.md, copilot.md)
+docs/templates/         Templates for new agents and skills
 config/                 omni-ai.example.yaml — copy to omni-ai.yaml (gitignored)
 ```
 
@@ -83,12 +85,12 @@ Key rules:
 - Memory stores: [packages/memory/src/stores/](packages/memory/src/stores/)
 - Compactors: [packages/memory/src/compactors/](packages/memory/src/compactors/)
 - Config example: [config/omni-ai.example.yaml](config/omni-ai.example.yaml)
-- Agent template: [agents/_template/agent.yaml](agents/_template/agent.yaml)
-- Skill template: [skills/_template/skill.ts](skills/_template/skill.ts)
+- Agent template: [docs/templates/agent.yaml](docs/templates/agent.yaml)
+- Skill template: [docs/templates/skill.ts](docs/templates/skill.ts)
 
 ## Adding a new agent
 
-1. Copy `agents/_template/agent.yaml` to `agents/<domain>/<domain>-<role>.yaml`
+1. Copy `docs/templates/agent.yaml` to `agents/<domain>/<domain>-<role>.yaml`
 2. Set `name:` to match the filename (without `.yaml`)
 3. Do NOT set `provider:` or `model:` — inherit from config
 4. Add to the agent catalog in [README.md](README.md)
@@ -104,6 +106,6 @@ Key rules:
 1. Create `packages/provider-<name>/` 
 2. Implement `IProvider` from `@omni-ai/core`
 3. Register it in `ProviderRegistry`
-4. Add docs to `providers/<name>/README.md`
+4. Add docs to `docs/providers/<name>.md`
 5. Add to `.env.example` with key format and link to obtain it
 6. Add to the providers section in [README.md](README.md)
