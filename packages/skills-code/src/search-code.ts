@@ -80,9 +80,13 @@ export const searchCodeSkill: ISkill<Input, SearchMatch[]> = {
     const { directory, pattern, extensions, maxResults, useRegex } =
       InputSchema.parse(input);
 
-    const matcher = useRegex
-      ? (line: string) => new RegExp(pattern).test(line)
-      : (line: string) => line.includes(pattern);
+    let matcher: (line: string) => boolean;
+    if (useRegex) {
+      const re = new RegExp(pattern);
+      matcher = (line: string) => re.test(line);
+    } else {
+      matcher = (line: string) => line.includes(pattern);
+    }
 
     const results: SearchMatch[] = [];
     await walkAndSearch(directory, extensions, matcher, results, maxResults);

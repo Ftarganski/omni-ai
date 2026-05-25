@@ -1,6 +1,6 @@
 import type { ISkill } from "@omni-ai/core";
 import { mkdir, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
+import { dirname, resolve, sep } from "node:path";
 import { z } from "zod";
 
 const InputSchema = z.object({
@@ -14,6 +14,18 @@ const InputSchema = z.object({
 
 type Input = z.infer<typeof InputSchema>;
 
+function assertSafePath(inputPath: string): string {
+  const cwd = process.cwd();
+  const resolved = resolve(cwd, inputPath);
+  const cwdWithSep = cwd.endsWith(sep) ? cwd : cwd + sep;
+  if (resolved !== cwd && !resolved.startsWith(cwdWithSep)) {
+    throw new Error(
+      `Access denied: "${inputPath}" resolves outside the working directory`
+    );
+  }
+  return resolved;
+}
+
 export const writeFileSkill: ISkill<Input, string> = {
   name: "write-file",
   description:
@@ -21,10 +33,11 @@ export const writeFileSkill: ISkill<Input, string> = {
 
   async execute(input: Input): Promise<string> {
     const { path, content, createDirs } = InputSchema.parse(input);
+    const safePath = assertSafePath(path);
     if (createDirs) {
-      await mkdir(dirname(path), { recursive: true });
+      await mkdir(dirname(safePath), { recursive: true });
     }
-    await writeFile(path, content, "utf-8");
-    return `Written: ${path}`;
+    await writeFile(safePath, content, "utf-8");
+    return `Written: ${safePath}`;
   },
 };

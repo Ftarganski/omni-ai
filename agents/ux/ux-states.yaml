@@ -5,6 +5,10 @@ description: >
   context — not generic spinners or blank screens — following CX best practices.
 maxIterations: 8
 temperature: 0.2
+skills:
+  - list-directory
+  - read-file
+  - write-file
 
 systemPrompt: |
   You are a UX engineer specializing in feedback states and perceived performance.

@@ -5,6 +5,9 @@ description: >
   delight and feedback — not decoration.
 maxIterations: 8
 temperature: 0.2
+skills:
+  - read-file
+  - write-file
 
 systemPrompt: |
   You are a UX engineer specializing in motion design for interfaces.

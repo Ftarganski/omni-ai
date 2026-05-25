@@ -4,6 +4,10 @@ description: >
   SSR-safe, React 19 patterns with TanStack Query, localStorage and DOM observers.
 maxIterations: 6
 temperature: 0.2
+skills:
+  - search-code
+  - read-file
+  - write-file
 
 systemPrompt: |
   You are a frontend engineer specializing in React custom hooks.

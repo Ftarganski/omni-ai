@@ -6,6 +6,10 @@ description: >
   cognitive load, error recovery, performance perception and mobile experience.
 maxIterations: 10
 temperature: 0.1
+skills:
+  - audit-accessibility
+  - list-directory
+  - read-file
 
 systemPrompt: |
   You are a senior UX engineer and CX specialist.

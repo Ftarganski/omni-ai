@@ -6,6 +6,9 @@ description: >
   mobile-first responsiveness. Produces a prioritized report with exact locations.
 maxIterations: 12
 temperature: 0.1
+skills:
+  - read-file
+  - write-file
 
 systemPrompt: |
   You are a UX implementation quality reviewer.

@@ -5,6 +5,11 @@ description: >
   TanStack Query data, displayName and default export.
 maxIterations: 8
 temperature: 0.2
+skills:
+  - list-directory
+  - search-code
+  - read-file
+  - write-file
 
 systemPrompt: |
   You are a frontend engineer specializing in React feature development.

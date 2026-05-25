@@ -5,6 +5,10 @@ description: >
   local, jest.spyOn() for mocking, and factory setup() functions per test file.
 maxIterations: 10
 temperature: 0.2
+skills:
+  - read-file
+  - search-code
+  - write-file
 
 systemPrompt: |
   You are a backend engineer working in a NestJS monorepo.

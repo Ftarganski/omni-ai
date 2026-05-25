@@ -1,8 +1,5 @@
 import type { ICompactor, IProvider, Message } from "@omni-ai/core";
-
-function estimateTokens(messages: Message[]): number {
-  return messages.reduce((sum, m) => sum + Math.ceil(m.content.length / 4), 0);
-}
+import { estimateTokens } from "../utils.js";
 
 function formatForSummary(messages: Message[]): string {
   return messages

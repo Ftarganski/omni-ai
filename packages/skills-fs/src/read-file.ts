@@ -1,5 +1,6 @@
 import type { ISkill } from "@omni-ai/core";
 import { readFile } from "node:fs/promises";
+import { resolve, sep } from "node:path";
 import { z } from "zod";
 
 const InputSchema = z.object({
@@ -8,6 +9,18 @@ const InputSchema = z.object({
 
 type Input = z.infer<typeof InputSchema>;
 
+function assertSafePath(inputPath: string): string {
+  const cwd = process.cwd();
+  const resolved = resolve(cwd, inputPath);
+  const cwdWithSep = cwd.endsWith(sep) ? cwd : cwd + sep;
+  if (resolved !== cwd && !resolved.startsWith(cwdWithSep)) {
+    throw new Error(
+      `Access denied: "${inputPath}" resolves outside the working directory`
+    );
+  }
+  return resolved;
+}
+
 export const readFileSkill: ISkill<Input, string> = {
   name: "read-file",
   description:
@@ -15,6 +28,7 @@ export const readFileSkill: ISkill<Input, string> = {
 
   async execute(input: Input): Promise<string> {
     const { path } = InputSchema.parse(input);
-    return await readFile(path, "utf-8");
+    const safePath = assertSafePath(path);
+    return await readFile(safePath, "utf-8");
   },
 };

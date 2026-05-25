@@ -6,6 +6,9 @@ description: >
   produces a single consolidated priority report with a merge decision.
 maxIterations: 20
 temperature: 0.1
+skills:
+  - read-file
+  - list-directory
 
 systemPrompt: |
   You are the QA lead for a full-stack TypeScript monorepo.

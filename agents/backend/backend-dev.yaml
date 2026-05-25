@@ -5,6 +5,11 @@ description: >
   listeners, tests, and module wiring — fully coordinated.
 maxIterations: 30
 temperature: 0.1
+skills:
+  - search-code
+  - list-directory
+  - read-file
+  - write-file
 
 systemPrompt: |
   You are a lead backend engineer in a NestJS monorepo.

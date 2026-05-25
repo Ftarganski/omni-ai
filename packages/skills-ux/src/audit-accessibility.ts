@@ -147,17 +147,23 @@ async function auditFile(filePath: string): Promise<A11yIssue[]> {
   return issues;
 }
 
+const MAX_DEPTH = 10;
+const MAX_FILES = 500;
+
 async function collectFiles(
   dir: string,
-  recursive: boolean
+  recursive: boolean,
+  depth = 0,
+  results: string[] = []
 ): Promise<string[]> {
+  if (depth > MAX_DEPTH || results.length >= MAX_FILES) return results;
   const entries = await readdir(dir, { withFileTypes: true });
-  const results: string[] = [];
   for (const entry of entries) {
+    if (results.length >= MAX_FILES) break;
     if (entry.name === "node_modules" || entry.name === "dist") continue;
     const full = join(dir, entry.name);
     if (entry.isDirectory() && recursive) {
-      results.push(...(await collectFiles(full, recursive)));
+      await collectFiles(full, recursive, depth + 1, results);
     } else if (
       entry.isFile() &&
       (entry.name.endsWith(".tsx") || entry.name.endsWith(".ts"))

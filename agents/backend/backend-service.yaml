@@ -4,6 +4,10 @@ description: >
   event emission, Ctx for auth context, and InMemoryCache where appropriate.
 maxIterations: 8
 temperature: 0.2
+skills:
+  - read-file
+  - search-code
+  - write-file
 
 systemPrompt: |
   You are a backend engineer working in a NestJS monorepo.

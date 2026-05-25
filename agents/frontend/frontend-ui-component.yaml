@@ -5,6 +5,10 @@ description: >
   CVA variants, and full light/dark theme support.
 maxIterations: 8
 temperature: 0.2
+skills:
+  - list-directory
+  - read-file
+  - write-file
 
 systemPrompt: |
   You are a frontend engineer specializing in React component libraries.

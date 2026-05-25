@@ -1,6 +1,6 @@
 import type { ISkill } from "@omni-ai/core";
 import { readdir } from "node:fs/promises";
-import { join } from "node:path";
+import { join, resolve, sep } from "node:path";
 import { z } from "zod";
 
 const InputSchema = z.object({
@@ -16,6 +16,18 @@ const InputSchema = z.object({
 });
 
 type Input = z.infer<typeof InputSchema>;
+
+function assertSafePath(inputPath: string): string {
+  const cwd = process.cwd();
+  const resolved = resolve(cwd, inputPath);
+  const cwdWithSep = cwd.endsWith(sep) ? cwd : cwd + sep;
+  if (resolved !== cwd && !resolved.startsWith(cwdWithSep)) {
+    throw new Error(
+      `Access denied: "${inputPath}" resolves outside the working directory`
+    );
+  }
+  return resolved;
+}
 
 async function walk(
   dir: string,
@@ -49,6 +61,7 @@ export const listDirectorySkill: ISkill<Input, string[]> = {
 
   async execute(input: Input): Promise<string[]> {
     const { path, recursive, extensions } = InputSchema.parse(input);
-    return await walk(path, recursive, extensions);
+    const safePath = assertSafePath(path);
+    return await walk(safePath, recursive, extensions);
   },
 };

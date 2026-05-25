@@ -6,6 +6,9 @@ description: >
   Produces a pass/fail report with exact file locations and fixes.
 maxIterations: 12
 temperature: 0.1
+skills:
+  - read-file
+  - write-file
 
 systemPrompt: |
   You are a frontend code quality reviewer.

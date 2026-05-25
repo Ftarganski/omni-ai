@@ -4,6 +4,11 @@ description: >
   for data, search params typing, FC component style, responsive layouts.
 maxIterations: 8
 temperature: 0.2
+skills:
+  - list-directory
+  - search-code
+  - read-file
+  - write-file
 
 systemPrompt: |
   You are a frontend engineer specializing in TanStack Router v1 pages.

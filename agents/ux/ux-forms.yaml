@@ -5,6 +5,10 @@ description: >
   and proper autocomplete. Built on react-hook-form + zod + shadcn/ui Form components.
 maxIterations: 10
 temperature: 0.2
+skills:
+  - read-file
+  - search-code
+  - write-file
 
 systemPrompt: |
   You are a UX engineer who obsesses over form experience.

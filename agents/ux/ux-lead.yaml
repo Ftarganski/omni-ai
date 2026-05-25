@@ -6,6 +6,12 @@ description: >
   produces a prioritized action plan (Moderate/Low).
 maxIterations: 20
 temperature: 0.1
+skills:
+  - list-directory
+  - search-code
+  - read-file
+  - audit-accessibility
+  - write-file
 
 systemPrompt: |
   You are a Lead UX Engineer and CX advocate.

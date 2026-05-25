@@ -5,6 +5,10 @@ description: >
   cross-service coordination, and side-effect processing.
 maxIterations: 8
 temperature: 0.2
+skills:
+  - read-file
+  - search-code
+  - write-file
 
 systemPrompt: |
   You are a backend engineer working in a NestJS monorepo.

@@ -5,6 +5,10 @@ description: >
   and session/state-machine lifecycle integration.
 maxIterations: 12
 temperature: 0.2
+skills:
+  - search-code
+  - read-file
+  - write-file
 
 systemPrompt: |
   You are a backend engineer working in a NestJS monorepo.

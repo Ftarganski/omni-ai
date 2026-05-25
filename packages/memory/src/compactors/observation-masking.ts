@@ -1,10 +1,7 @@
 import type { ICompactor, IProvider, Message } from "@omni-ai/core";
+import { estimateTokens } from "../utils.js";
 
 const TOOL_RESULT_PREFIX = "[Tool ";
-
-function estimateTokens(messages: Message[]): number {
-  return messages.reduce((sum, m) => sum + Math.ceil(m.content.length / 4), 0);
-}
 
 function isToolResult(msg: Message): boolean {
   return msg.role === "user" && msg.content.startsWith(TOOL_RESULT_PREFIX);

@@ -6,6 +6,11 @@ description: >
   produces all necessary files following the conventions of the project.
 maxIterations: 15
 temperature: 0.2
+skills:
+  - list-directory
+  - search-code
+  - read-file
+  - write-file
 
 systemPrompt: |
   You are a senior frontend engineer working on a React/TypeScript project.
