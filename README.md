@@ -85,11 +85,20 @@ omni-ai/
 ├── packages/                      # npm packages (pnpm workspaces)
 │   ├── core/                      # @omni-ai/core — interfaces, registry, config schema
 │   │   └── src/
-│   │       ├── types.ts           # IProvider, ISkill, IAgent, request/response types
+│   │       ├── types.ts           # IProvider, ISkill, IAgent, IMemoryStore, ICompactor...
 │   │       ├── config/schema.ts   # Zod schemas for omni-ai.yaml validation
-│   │       ├── agents/agent.ts    # Base Agent implementation (agentic loop)
+│   │       ├── agents/agent.ts    # Base Agent implementation (agentic loop + memory)
 │   │       ├── providers/         # ProviderRegistry
 │   │       └── skills/            # SkillRegistry
+│   │
+│   ├── memory/                    # @omni-ai/memory — session memory & compaction
+│   │   └── src/
+│   │       ├── stores/
+│   │       │   ├── in-memory.ts   # InMemoryStore (default, no persistence)
+│   │       │   └── sqlite.ts      # SQLiteMemoryStore (local file, FTS5 search)
+│   │       └── compactors/
+│   │           ├── observation-masking.ts  # Mask old tool results (zero LLM cost)
+│   │           └── summary.ts             # LLM-based history summarization
 │   │
 │   ├── skills-fs/                 # @omni-ai/skills-fs — filesystem skills
 │   │   └── src/
@@ -399,6 +408,119 @@ Compatible endpoints: **Ollama**, **LM Studio**, **vLLM**, **Groq**, **Together 
 
 ---
 
+## Memory & context compaction
+
+Install the memory package:
+
+```bash
+pnpm add @omni-ai/memory
+```
+
+### How it reduces token consumption
+
+```
+Without memory                     With ObservationMasking
+──────────────────────────────     ──────────────────────────────
+Iteration 1:  1 000 tokens         Iteration 1:  1 000 tokens
+Iteration 2:  3 500 tokens         Iteration 2:  3 500 tokens
+Iteration 3:  8 200 tokens   →     Iteration 3:  1 800 tokens  ← old tool results masked
+Iteration 4: 14 000 tokens         Iteration 4:  2 100 tokens
+Total:       26 700 tokens         Total:         8 400 tokens  (68% reduction)
+```
+
+### Compactors
+
+| Class | Strategy | LLM calls | Best for |
+|-------|----------|-----------|----------|
+| `ObservationMaskingCompactor` | Replaces old tool result bodies with `[masked ~N tokens]` | 0 | Tool-heavy agents (file readers, code searchers) |
+| `SummaryCompactor` | LLM summarizes messages older than N, keeps recent verbatim | 1 per trigger | Long conversations, multi-step reasoning |
+
+### Storage backends
+
+| Class | Persistence | Search | Dependencies |
+|-------|------------|--------|--------------|
+| `InMemoryStore` | Process lifetime only | Keyword (substring) | None |
+| `SQLiteMemoryStore` | Local `.db` file | FTS5 full-text | `better-sqlite3` (~300 KB) |
+
+### Usage examples
+
+**In-session compaction only** (zero config, zero extra dependencies):
+
+```typescript
+import { ObservationMaskingCompactor } from "@omni-ai/memory";
+
+const agent = new Agent(
+  {
+    ...agentConfig,
+    memory: {
+      compactor: new ObservationMaskingCompactor(),
+      maxContextTokens: 60_000,   // trigger at 42k tokens (70%)
+    },
+  },
+  provider,
+  skills
+);
+
+const result = await agent.run({ input: "Analyse all files in src/" });
+```
+
+**Persistent memory across sessions** (SQLite):
+
+```typescript
+import { SQLiteMemoryStore, SummaryCompactor } from "@omni-ai/memory";
+
+const store = new SQLiteMemoryStore({ path: "./sessions.db" });
+
+const agent = new Agent(
+  { ...agentConfig, memory: { store, compactor: new SummaryCompactor() } },
+  provider,
+  skills
+);
+
+// First run — session is stored automatically
+await agent.run({
+  input: "Review the auth module",
+  session: { resourceId: "user-42", threadId: "review-2025-05-25" },
+});
+
+// Later run — agent loads previous messages as context
+await agent.run({
+  input: "What issues did you find last time?",
+  session: { resourceId: "user-42", threadId: "review-2025-05-25" },
+});
+
+await store.close();
+```
+
+**Both together** (recommended for production):
+
+```typescript
+import { SQLiteMemoryStore, ObservationMaskingCompactor } from "@omni-ai/memory";
+
+const memory = {
+  store: new SQLiteMemoryStore({ path: "./sessions.db" }),
+  compactor: new ObservationMaskingCompactor(),
+  maxContextTokens: 80_000,
+  lastMessages: 8,
+};
+```
+
+### Memory interfaces (for custom backends)
+
+Implement `IMemoryStore` from `@omni-ai/core` to use any storage backend:
+
+```typescript
+import type { IMemoryStore, SessionId, MemoryEntry } from "@omni-ai/core";
+
+export class RedisMemoryStore implements IMemoryStore {
+  async saveMessages(session: SessionId, messages: MemoryEntry[]) { ... }
+  async loadMessages(session: SessionId, limit?: number) { ... }
+  async search?(session: SessionId, query: string) { ... }
+}
+```
+
+---
+
 ## Extending
 
 ### Create a custom provider
@@ -536,6 +658,7 @@ interface AgentConfig {
 - [x] UX agents — reviewer, states, forms, motion, lead (5)
 - [x] QA agents — qa-frontend, qa-ux, qa-backend, qa-lead (4)
 - [x] Provider/model inheritance — agents inherit from config defaults
+- [x] `@omni-ai/memory` — session memory + compaction (InMemoryStore, SQLiteMemoryStore, ObservationMaskingCompactor, SummaryCompactor)
 - [ ] `@omni-ai/provider-anthropic` — production Anthropic adapter
 - [ ] `@omni-ai/provider-openai` — production OpenAI adapter
 - [ ] `@omni-ai/provider-copilot` — production GitHub Copilot adapter

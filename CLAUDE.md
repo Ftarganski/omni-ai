@@ -62,10 +62,26 @@ git push origin master
 - `provider` is optional in `AgentConfig` — do not make it required again
 - `AgentConfigSchema.provider` is `z.string().optional()` — do not revert to required
 
+## Memory system
+
+`@omni-ai/memory` (`packages/memory/`) is the session memory and compaction package.
+
+Key rules:
+- `IMemoryStore`, `ICompactor`, `SessionId`, `MemoryEntry` live in `@omni-ai/core` — no circular deps
+- `Agent.run()` accepts `session?: SessionId`; memory is opt-in and fully backward-compatible
+- `newMessages` tracking: agent saves only messages from the current run, not the loaded history
+- `ObservationMaskingCompactor` — zero LLM cost, masks old tool results; always safe to use
+- `SummaryCompactor` — 1 LLM call per trigger; uses the agent's own `IProvider`, no extra API key
+- `SQLiteMemoryStore` uses `better-sqlite3` (sync API, WAL mode, FTS5 full-text search)
+- `InMemoryStore` is the default when no store is configured — process-lifetime only
+
 ## File locations for key types
 
 - Core interfaces: [packages/core/src/types.ts](packages/core/src/types.ts)
 - Config schema: [packages/core/src/config/schema.ts](packages/core/src/config/schema.ts)
+- Agent loop: [packages/core/src/agents/agent.ts](packages/core/src/agents/agent.ts)
+- Memory stores: [packages/memory/src/stores/](packages/memory/src/stores/)
+- Compactors: [packages/memory/src/compactors/](packages/memory/src/compactors/)
 - Config example: [config/omni-ai.example.yaml](config/omni-ai.example.yaml)
 - Agent template: [agents/_template/agent.yaml](agents/_template/agent.yaml)
 - Skill template: [skills/_template/skill.ts](skills/_template/skill.ts)

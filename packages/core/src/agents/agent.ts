@@ -2,10 +2,13 @@ import type {
   IAgent,
   IProvider,
   ISkill,
+  IMemoryStore,
   AgentConfig,
   AgentRunOptions,
   AgentRunResult,
   Message,
+  MemoryEntry,
+  SessionId,
   SkillContext,
   ToolDefinition,
   ToolCall,
@@ -23,7 +26,25 @@ export class Agent implements IAgent {
   }
 
   async run(options: AgentRunOptions): Promise<AgentRunResult> {
-    const messages: Message[] = [{ role: "user", content: options.input }];
+    const memCfg = this.config.memory;
+    const session = options.session;
+    const store = memCfg?.store;
+    const compactor = memCfg?.compactor;
+    const maxCtxTokens = memCfg?.maxContextTokens ?? 80_000;
+
+    // Load history from store and build initial messages array
+    const history: Message[] = session && store
+      ? (await store.loadMessages(session)).map(e => ({ role: e.role, content: e.content }))
+      : [];
+
+    const messages: Message[] = [...history];
+    // Track only messages added in this run for persistence
+    const newMessages: Message[] = [];
+
+    const firstMsg: Message = { role: "user", content: options.input };
+    messages.push(firstMsg);
+    newMessages.push(firstMsg);
+
     const tools: ToolDefinition[] = this.buildToolDefinitions();
     const ctx: SkillContext = { provider: this.provider, config: options.context ?? {} };
     const maxIterations = this.config.maxIterations ?? 10;
@@ -34,6 +55,12 @@ export class Agent implements IAgent {
 
     while (iterations < maxIterations) {
       iterations++;
+
+      // Compact in-session context if threshold exceeded
+      if (compactor?.shouldCompact(messages, maxCtxTokens)) {
+        const compacted = await compactor.compact(messages, this.provider);
+        messages.splice(0, messages.length, ...compacted);
+      }
 
       const response = await this.provider.complete({
         messages,
@@ -49,6 +76,10 @@ export class Agent implements IAgent {
       }
 
       if (!response.toolCalls || response.toolCalls.length === 0) {
+        const finalMsg: Message = { role: "assistant", content: response.content };
+        messages.push(finalMsg);
+        newMessages.push(finalMsg);
+        await this.persist(store, session, newMessages);
         return {
           output: response.content,
           iterations,
@@ -56,15 +87,34 @@ export class Agent implements IAgent {
         };
       }
 
-      messages.push({ role: "assistant", content: response.content });
+      const assistantMsg: Message = { role: "assistant", content: response.content };
+      messages.push(assistantMsg);
+      newMessages.push(assistantMsg);
 
       for (const call of response.toolCalls) {
         const result = await this.executeToolCall(call, ctx);
-        messages.push({ role: "user", content: `[Tool ${call.name} result]: ${result}` });
+        const toolMsg: Message = { role: "user", content: `[Tool ${call.name} result]: ${result}` };
+        messages.push(toolMsg);
+        newMessages.push(toolMsg);
       }
     }
 
+    await this.persist(store, session, newMessages);
     throw new Error(`Agent "${this.config.name}" exceeded maxIterations (${maxIterations})`);
+  }
+
+  private async persist(
+    store: IMemoryStore | undefined,
+    session: SessionId | undefined,
+    messages: Message[]
+  ): Promise<void> {
+    if (!store || !session || messages.length === 0) return;
+    const entries: MemoryEntry[] = messages.map(m => ({
+      role: m.role,
+      content: m.content,
+      timestamp: Date.now(),
+    }));
+    await store.saveMessages(session, entries);
   }
 
   private buildToolDefinitions(): ToolDefinition[] {

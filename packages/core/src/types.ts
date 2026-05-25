@@ -1,5 +1,49 @@
 export type Role = "user" | "assistant" | "system";
 
+// --- Memory ---
+
+export interface SessionId {
+  /** Stable identifier for the user or entity (e.g. user ID, workspace ID). */
+  resourceId: string;
+  /** Unique identifier for this conversation thread. */
+  threadId: string;
+}
+
+export interface MemoryEntry {
+  role: Role;
+  content: string;
+  timestamp: number;
+}
+
+export interface MemorySearchResult {
+  content: string;
+  score: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface IMemoryStore {
+  saveMessages(session: SessionId, messages: MemoryEntry[]): Promise<void>;
+  loadMessages(session: SessionId, limit?: number): Promise<MemoryEntry[]>;
+  search?(session: SessionId, query: string, topK?: number): Promise<MemorySearchResult[]>;
+  getWorkingMemory?(session: SessionId): Promise<string | null>;
+  setWorkingMemory?(session: SessionId, content: string): Promise<void>;
+  close?(): Promise<void>;
+}
+
+export interface ICompactor {
+  shouldCompact(messages: Message[], maxTokens: number): boolean;
+  compact(messages: Message[], provider: IProvider): Promise<Message[]>;
+}
+
+export interface MemoryConfig {
+  store?: IMemoryStore;
+  compactor?: ICompactor;
+  /** Verbatim messages to keep when compacting. Default: 6 */
+  lastMessages?: number;
+  /** Token threshold that triggers compaction (at 70% of this value). Default: 80_000 */
+  maxContextTokens?: number;
+}
+
 export interface Message {
   role: Role;
   content: string;
@@ -101,11 +145,14 @@ export interface AgentConfig {
   skills?: string[];
   maxIterations?: number;
   temperature?: number;
+  memory?: MemoryConfig;
 }
 
 export interface AgentRunOptions {
   input: string;
   context?: Record<string, unknown>;
+  /** Provide a session to enable message history persistence. */
+  session?: SessionId;
 }
 
 export interface AgentRunResult {
