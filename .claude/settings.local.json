@@ -1,4 +1,4 @@
-﻿{
+{
   "permissions": {
     "allow": [
       "WebSearch",
@@ -22,10 +22,30 @@
       "Bash(gh issue *)",
       "Bash(pnpm *)",
       "Bash(node *)",
-      "Bash(npx *)"
+      "Bash(npx *)",
+      "WebFetch(domain:docs.mem0.ai)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:mastra.ai)",
+      "WebFetch(domain:redis.github.io)",
+      "WebFetch(domain:www.morphllm.com)",
+      "WebFetch(domain:blog.jetbrains.com)",
+      "WebFetch(domain:vectorize.io)",
+      "WebFetch(domain:atlan.com)",
+      "WebFetch(domain:lancedb.github.io)",
+      "WebFetch(domain:bencoding.com)",
+      "WebFetch(domain:hindsight.vectorize.io)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:zylos.ai)",
+      "WebFetch(domain:developers.llamaindex.ai)",
+      "WebFetch(domain:ai-sdk.dev)",
+      "Bash(Get-ChildItem -Path \"e:\\\\Desenvolvedor Full Stack\\\\Works\\\\omni-ai\\\\packages\\\\core\\\\src\\\\skills\" -ErrorAction SilentlyContinue)",
+      "Bash(for dir *)",
+      "Read(//e/Desenvolvedor Full Stack/Works/omni-ai/packages$dir/**)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"Path\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\", \"User\"\\); gh --version)"
     ],
     "additionalDirectories": [
-      "C:\\Users\\conta\\.claude\\projects\\e--Desenvolvedor-Full-Stack-Works-omni-ai\\memory"
+      "C:\\Users\\conta\\.claude\\projects\\e--Desenvolvedor-Full-Stack-Works-omni-ai\\memory",
+      "e:\\Desenvolvedor Full Stack\\Works\\omni-ai"
     ]
   }
 }
