@@ -1,7 +1,16 @@
 #!/usr/bin/env node
+import { resolve } from "path";
+import { config as loadDotenv } from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 import { Command } from "commander";
 import { runCommand } from "./commands/run.js";
 import { listCommand } from "./commands/list.js";
+
+// Load .env from the omni-ai repo root (4 levels up from packages/cli/dist/)
+const __dirname = dirname(fileURLToPath(import.meta.url));
+// __dirname = packages/cli/dist/ → 3 levels up = omni-ai root
+loadDotenv({ path: resolve(__dirname, "..", "..", "..", ".env") });
 
 const program = new Command();
 

@@ -3,9 +3,10 @@ import { z } from "zod";
 export const ProviderConfigSchema = z.object({
   name: z.string(),
   type: z.enum(["anthropic", "openai", "copilot", "custom"]),
-  apiKey: z.string().optional(),
-  baseUrl: z.string().url().optional(),
-  defaultModel: z.string().optional(),
+  // nullish handles YAML empty value (parsed as null) and absent key (undefined)
+  apiKey: z.string().nullish().transform((v) => v ?? undefined),
+  baseUrl: z.string().url().nullish().transform((v) => v ?? undefined),
+  defaultModel: z.string().nullish().transform((v) => v ?? undefined),
   options: z.record(z.unknown()).optional(),
 });
 

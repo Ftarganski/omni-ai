@@ -5,6 +5,8 @@ import YAML from "yaml";
 import { loadConfig } from "./config/loader.js";
 import { SkillRegistry } from "./skills/registry.js";
 import { loadAgent } from "./agents/loader.js";
+import { Agent } from "./agents/agent.js";
+import { createProvider } from "./providers/registry.js";
 import type { OmniAiConfig } from "./config/schema.js";
 import type { ISkill, IMemoryStore, AgentRunOptions, AgentRunResult } from "./types.js";
 
@@ -39,15 +41,31 @@ export async function createRuntime(options?: {
 
   const agentsBaseDir = resolve(configDir, "..", config.agentsDir);
 
-  async function resolveAgentPath(nameOrPath: string): Promise<string> {
+  async function resolveAgent(nameOrPath: string): Promise<Agent> {
+    // Explicit path → load from file
     if (nameOrPath.includes("/") || nameOrPath.endsWith(".yaml")) {
-      return resolve(nameOrPath);
+      return loadAgent(resolve(nameOrPath), config, skills);
     }
+
+    // Check inline agents defined inside omni-ai.yaml first
+    const inlineCfg = config.agents?.find((a) => a.name === nameOrPath);
+    if (inlineCfg) {
+      const providerName = inlineCfg.provider ?? config.defaultProvider;
+      const providerConfig = config.providers.find((p) => p.name === providerName);
+      if (!providerConfig) {
+        throw new Error(`Provider "${providerName}" not found in config for agent "${nameOrPath}"`);
+      }
+      const provider = createProvider(providerConfig);
+      const resolvedSkills = (inlineCfg.skills ?? []).map((n) => skills.get(n));
+      return new Agent(inlineCfg, provider, resolvedSkills);
+    }
+
+    // Fall back to files in agentsDir
     const files = await glob("**/*.yaml", { cwd: agentsBaseDir, absolute: true });
     for (const file of files) {
       const raw = await readFile(file, "utf-8");
       const data = YAML.parse(raw) as { name?: string };
-      if (data?.name === nameOrPath) return file;
+      if (data?.name === nameOrPath) return loadAgent(file, config, skills);
     }
     throw new Error(`Agent "${nameOrPath}" not found in ${agentsBaseDir}`);
   }
@@ -57,8 +75,7 @@ export async function createRuntime(options?: {
     skills,
 
     async run(nameOrPath, input, opts = {}) {
-      const agentPath = await resolveAgentPath(nameOrPath);
-      const agent = await loadAgent(agentPath, config, skills);
+      const agent = await resolveAgent(nameOrPath);
       // Inject shared memory store when session is provided and agent has no store configured
       if (options?.memoryStore && opts.session && !agent.config.memory?.store) {
         agent.config.memory = {
@@ -70,14 +87,20 @@ export async function createRuntime(options?: {
     },
 
     async listAgents(agentsDir?: string) {
+      const summaries: AgentSummary[] = [];
+
+      // Include inline agents from omni-ai.yaml
+      for (const a of config.agents ?? []) {
+        summaries.push({ name: a.name, description: a.description, path: "(config)" });
+      }
+
       const dir = agentsDir ?? agentsBaseDir;
       const files = await glob("**/*.yaml", { cwd: dir, absolute: true });
-      const summaries: AgentSummary[] = [];
       for (const file of files) {
         try {
           const raw = await readFile(file, "utf-8");
           const data = YAML.parse(raw) as { name?: string; description?: string };
-          if (data?.name) {
+          if (data?.name && !summaries.find((s) => s.name === data.name)) {
             summaries.push({ name: data.name, description: data.description ?? "", path: file });
           }
         } catch {
