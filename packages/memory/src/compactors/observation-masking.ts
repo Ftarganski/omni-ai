@@ -41,7 +41,8 @@ export class ObservationMaskingCompactor implements ICompactor {
     return messages.map((msg, i) => {
       if (i >= cutoff || !isToolResult(msg)) return msg;
       const tokenCount = Math.ceil(msg.content.length / 4);
-      const toolName = msg.content.slice(TOOL_RESULT_PREFIX.length, msg.content.indexOf(" result]:"));
+      const match = /^\[Tool ([^\]]+) result\]:/.exec(msg.content);
+      const toolName = match?.[1] ?? "unknown";
       return {
         role: msg.role,
         content: `[Tool ${toolName} result: masked, ~${tokenCount} tokens]`,

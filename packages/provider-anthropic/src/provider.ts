@@ -33,6 +33,12 @@ export class AnthropicProvider implements IProvider {
 
   async complete(request: CompletionRequest): Promise<CompletionResponse> {
     const model = request.model ?? this.defaultModel;
+    if (request.temperature !== undefined && request.temperature > 1) {
+      throw new Error(
+        `Anthropic models require temperature <= 1.0 (got ${request.temperature}). ` +
+        `Update the agent YAML or use an OpenAI provider for higher temperature values.`
+      );
+    }
     const system = extractSystemPrompt(request);
     const messages = toAnthropicMessages(request.messages);
     const tools =

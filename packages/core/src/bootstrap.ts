@@ -59,10 +59,10 @@ export async function createRuntime(options?: {
     async run(nameOrPath, input, opts = {}) {
       const agentPath = await resolveAgentPath(nameOrPath);
       const agent = await loadAgent(agentPath, config, skills);
-      // Inject shared memory store when session is provided and config has none
+      // Inject shared memory store when session is provided and agent has no store configured
       if (options?.memoryStore && opts.session && !agent.config.memory?.store) {
-        (agent.config as { memory?: { store?: IMemoryStore } }).memory = {
-          ...agent.config.memory,
+        agent.config.memory = {
+          ...(agent.config.memory ?? {}),
           store: options.memoryStore,
         };
       }

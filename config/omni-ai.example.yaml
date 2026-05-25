@@ -3,8 +3,8 @@ version: "1"
 # Active provider — all agents use this unless they declare their own
 defaultProvider: anthropic
 
-# Directory where agent YAML files are stored (relative to this config file)
-agentsDir: ../agents
+# Directory where agent YAML files are stored (relative to the repo root, not this config file)
+agentsDir: agents
 
 providers:
   - name: anthropic
