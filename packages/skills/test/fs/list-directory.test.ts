@@ -55,8 +55,6 @@ describe("listDirectorySkill", () => {
   });
 
   it("rejects paths that escape the working directory", async () => {
-    await expect(
-      listDirectorySkill.execute({ path: "../../../etc" }, {} as never),
-    ).rejects.toThrow(/Access denied/);
+    await expect(listDirectorySkill.execute({ path: "../../../etc", recursive: false }, {} as never)).rejects.toThrow(/Access denied/);
   });
 });
