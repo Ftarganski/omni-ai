@@ -1,10 +1,10 @@
-import type { ICompactor, IProvider, Message } from "@omni-ai/core";
+import { contentToString, type ICompactor, type IProvider, type Message } from "@omni-ai/core";
 import { estimateTokens } from "../utils.js";
 
 const TOOL_RESULT_PREFIX = "[Tool ";
 
 function isToolResult(msg: Message): boolean {
-  return msg.role === "user" && msg.content.startsWith(TOOL_RESULT_PREFIX);
+  return msg.role === "user" && contentToString(msg.content).startsWith(TOOL_RESULT_PREFIX);
 }
 
 /**
@@ -37,8 +37,9 @@ export class ObservationMaskingCompactor implements ICompactor {
     const cutoff = messages.length - this.lastMessages;
     return messages.map((msg, i) => {
       if (i >= cutoff || !isToolResult(msg)) return msg;
-      const tokenCount = Math.ceil(msg.content.length / 4);
-      const match = /^\[Tool ([^\]]+) result\]:/.exec(msg.content);
+      const str = contentToString(msg.content);
+      const tokenCount = Math.ceil(str.length / 4);
+      const match = /^\[Tool ([^\]]+) result\]:/.exec(str);
       const toolName = match?.[1] ?? "unknown";
       return {
         role: msg.role,

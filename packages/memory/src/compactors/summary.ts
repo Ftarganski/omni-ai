@@ -1,11 +1,11 @@
-import type { ICompactor, IProvider, Message } from "@omni-ai/core";
+import { contentToString, type ICompactor, type IProvider, type Message } from "@omni-ai/core";
 import { estimateTokens } from "../utils.js";
 
 function formatForSummary(messages: Message[]): string {
   return messages
     .map((m) => {
       const label = m.role === "assistant" ? "Assistant" : "User/Tool";
-      return `[${label}]: ${m.content}`;
+      return `[${label}]: ${contentToString(m.content)}`;
     })
     .join("\n\n");
 }

@@ -12,7 +12,7 @@ It provides `IProvider`, `ISkill`, and `IAgent` interfaces so that agents can be
 ```
 packages/core/          @omni-ai/core — interfaces, registry, Zod config schema
 packages/provider-*/    Provider adapters (anthropic, openai) — compiled npm packages
-packages/skills-*/      Skill packages (fs, code, ux) — compiled npm packages
+packages/skills/        @omni-ai/skills — all skills with subpath exports (fs, code, ux, git, http, multimodal)
 packages/memory/        @omni-ai/memory — session stores and compactors
 packages/cli/           @omni-ai/cli — `omni` CLI binary
 agents/backend/         NestJS backend agent definitions (7 agents)

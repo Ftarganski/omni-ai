@@ -8,9 +8,13 @@
       "@omni-ai/memory": ["packages/memory/src/index.ts"],
       "@omni-ai/provider-anthropic": ["packages/provider-anthropic/src/index.ts"],
       "@omni-ai/provider-openai": ["packages/provider-openai/src/index.ts"],
-      "@omni-ai/skills-fs": ["packages/skills-fs/src/index.ts"],
-      "@omni-ai/skills-code": ["packages/skills-code/src/index.ts"],
-      "@omni-ai/skills-ux": ["packages/skills-ux/src/index.ts"],
+      "@omni-ai/skills": ["packages/skills/src/index.ts"],
+      "@omni-ai/skills/code": ["packages/skills/src/code/index.ts"],
+      "@omni-ai/skills/fs": ["packages/skills/src/fs/index.ts"],
+      "@omni-ai/skills/git": ["packages/skills/src/git/index.ts"],
+      "@omni-ai/skills/http": ["packages/skills/src/http/index.ts"],
+      "@omni-ai/skills/multimodal": ["packages/skills/src/multimodal/index.ts"],
+      "@omni-ai/skills/ux": ["packages/skills/src/ux/index.ts"],
       "@omni-ai/cli": ["packages/cli/src/bin.ts"]
     }
   },
