@@ -12,7 +12,7 @@ const InputSchema = z.object({
     .describe("Create intermediate directories if they do not exist"),
 });
 
-type Input = z.infer<typeof InputSchema>;
+export type WriteFileInput = z.infer<typeof InputSchema>;
 
 function assertSafePath(inputPath: string): string {
   const cwd = process.cwd();
@@ -26,12 +26,12 @@ function assertSafePath(inputPath: string): string {
   return resolved;
 }
 
-export const writeFileSkill: ISkill<Input, string> = {
+export const writeFileSkill: ISkill<WriteFileInput, string> = {
   name: "write-file",
   description:
     "Write or overwrite a file with the given content. Use this to create new components, hooks, pages or any source file after generating the code.",
 
-  async execute(input: Input): Promise<string> {
+  async execute(input: WriteFileInput): Promise<string> {
     const { path, content, createDirs } = InputSchema.parse(input);
     const safePath = assertSafePath(path);
     if (createDirs) {

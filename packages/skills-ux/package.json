@@ -15,7 +15,8 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "eslint src/ test/"
   },
   "dependencies": {
     "@omni-ai/core": "workspace:*",

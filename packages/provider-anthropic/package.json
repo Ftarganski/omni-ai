@@ -15,7 +15,8 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "eslint src/ test/"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",

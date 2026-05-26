@@ -15,7 +15,7 @@ const InputSchema = z.object({
     .describe("Filter results by file extension, e.g. [\".ts\", \".tsx\"]"),
 });
 
-type Input = z.infer<typeof InputSchema>;
+export type ListDirectoryInput = z.infer<typeof InputSchema>;
 
 function assertSafePath(inputPath: string): string {
   const cwd = process.cwd();
@@ -54,12 +54,12 @@ async function walk(
   return results;
 }
 
-export const listDirectorySkill: ISkill<Input, string[]> = {
+export const listDirectorySkill: ISkill<ListDirectoryInput, string[]> = {
   name: "list-directory",
   description:
     "List files in a directory. Use this to discover existing components, pages or hooks before creating new ones, avoiding duplicates.",
 
-  async execute(input: Input): Promise<string[]> {
+  async execute(input: ListDirectoryInput): Promise<string[]> {
     const { path, recursive, extensions } = InputSchema.parse(input);
     const safePath = assertSafePath(path);
     return await walk(safePath, recursive, extensions);

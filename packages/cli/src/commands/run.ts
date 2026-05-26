@@ -1,5 +1,4 @@
 import { writeFile } from "fs/promises";
-import chalk from "chalk";
 import { createRuntime } from "@omni-ai/core";
 import { readFileSkill, writeFileSkill, listDirectorySkill } from "@omni-ai/skills-fs";
 import { searchCodeSkill } from "@omni-ai/skills-code";

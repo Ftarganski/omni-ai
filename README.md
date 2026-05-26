@@ -171,6 +171,7 @@ omni chain "<prompt>" <agent1> <agent2> [agent3...]
 | `--config <path>` | string | Caminho para o `omni-ai.yaml` |
 | `--output <file>` | string | Salva o output final em arquivo |
 | `--verbose` | flag | Imprime o output de cada agente intermediário |
+| `--stream` | flag | Transmite tokens em tempo real para cada agente da cadeia |
 
 **Exemplos:**
 
@@ -186,6 +187,9 @@ omni chain "crie o módulo de customers" backend-schema backend-dev qa-backend -
 
 # Verbose — mostra output intermediário de cada agente
 omni chain "crie módulo de invoices" backend-schema backend-dev --verbose
+
+# Streaming em tempo real ao longo da cadeia
+omni chain "crie e revise o módulo de orders" backend-dev qa-backend --stream
 ```
 
 **Output visual:**
@@ -698,7 +702,9 @@ omni-ai/
 │           ├── bin.ts                 # Entry point, carrega .env
 │           ├── commands/
 │           │   ├── run.ts             # omni run <agent> "<prompt>"
-│           │   └── list.ts            # omni list agents|skills|providers
+│           │   ├── chain.ts           # omni chain "<prompt>" <agent1> <agent2>...
+│           │   ├── list.ts            # omni list agents|skills|providers
+│           │   └── init.ts            # omni init — wizard interativo
 │           └── utils/
 │               ├── format.ts          # Output formatado (tokens, iterações, erros)
 │               └── config-path.ts     # Resolve caminho do omni-ai.yaml
@@ -884,14 +890,30 @@ interface IProvider {
   readonly name: string;
   readonly capabilities: ProviderCapabilities;
   complete(request: CompletionRequest): Promise<CompletionResponse>;
-  embed?(request: EmbeddingRequest): Promise<EmbeddingResponse>;
-  stream?(request: CompletionRequest): AsyncGenerator<string>;
+  embed?(request: EmbeddingRequest): Promise<EmbeddingResponse>;  // requer capabilities.embedding = true
+}
+
+interface ProviderCapabilities {
+  chat: boolean;
+  embedding: boolean;
+  streaming: boolean;   // suporte a onToken em CompletionRequest
+  toolUse: boolean;
+  vision: boolean;
+}
+
+interface CompletionRequest {
+  messages: Message[];
+  model?: string;
+  temperature?: number;
+  systemPrompt?: string;
+  tools?: ToolDefinition[];
+  onToken?: (chunk: string) => void;  // habilita streaming chunk a chunk
 }
 
 interface ISkill<TInput = unknown, TOutput = unknown> {
   readonly name: string;
   readonly description: string;
-  execute(input: TInput): Promise<TOutput>;
+  execute(input: TInput, ctx: SkillContext): Promise<TOutput>;
 }
 
 interface IAgent {
@@ -908,21 +930,51 @@ interface AgentConfig {
   skills?: string[];
   maxIterations?: number;   // padrão: 10
   temperature?: number;
-  memory?: AgentMemoryConfig;
+  memory?: MemoryConfig;
 }
 
 interface AgentRunOptions {
   input: string;
   context?: Record<string, unknown>;
-  session?: SessionId;      // habilita persistência de memória
+  session?: SessionId;                // habilita persistência de memória
+  onToken?: (chunk: string) => void;  // habilita streaming de tokens em tempo real
 }
 
 interface AgentRunResult {
   output: string;
   iterations: number;
-  usage: { inputTokens: number; outputTokens: number };
+  usage?: { inputTokens: number; outputTokens: number };
+}
+
+interface SessionId {
+  resourceId: string;  // identificador estável (ex: user ID, workspace ID)
+  threadId: string;    // identificador da conversa ou feature
 }
 ```
+
+---
+
+## Arquitetura de pacotes
+
+```
+@omni-ai/cli
+  ├── @omni-ai/core          ← interfaces, registry, bootstrap, config
+  ├── @omni-ai/memory        ← stores, compactors, vector index
+  ├── @omni-ai/provider-anthropic
+  ├── @omni-ai/provider-openai
+  ├── @omni-ai/skills-fs
+  ├── @omni-ai/skills-code
+  └── @omni-ai/skills-ux
+
+@omni-ai/memory              → @omni-ai/core
+@omni-ai/provider-anthropic  → @omni-ai/core
+@omni-ai/provider-openai     → @omni-ai/core
+@omni-ai/skills-fs           → @omni-ai/core
+@omni-ai/skills-code         → @omni-ai/core
+@omni-ai/skills-ux           → @omni-ai/core
+```
+
+`@omni-ai/core` não tem dependências internas — é a base estável do framework. Todos os outros pacotes dependem apenas dele, sem dependências cruzadas entre si.
 
 ---
 
@@ -938,7 +990,10 @@ pnpm build
 # Type-check sem build
 pnpm typecheck
 
-# Rodar testes (quando disponíveis)
+# Lint em todos os pacotes
+pnpm lint
+
+# Rodar testes
 pnpm test
 
 # Build de um pacote específico
@@ -952,6 +1007,8 @@ pnpm build && omni list agents
 
 ## Roadmap
 
+### Concluído
+
 - [x] `@omni-ai/core` — interfaces, ProviderRegistry, SkillRegistry, config schema (Zod)
 - [x] `@omni-ai/provider-anthropic` — adapter completo com mapeamento de tipos e tool use
 - [x] `@omni-ai/provider-openai` — adapter completo (cobre OpenAI, Copilot, Groq, Ollama, Azure)
@@ -959,7 +1016,7 @@ pnpm build && omni list agents
 - [x] `@omni-ai/skills-code` — search-code (regex, filtro por extensão, maxResults)
 - [x] `@omni-ai/skills-ux` — audit-accessibility (scan heurístico TSX)
 - [x] `@omni-ai/memory` — InMemoryStore, SQLiteMemoryStore, SemanticMemoryStore, VectorIndex, ObservationMaskingCompactor, SummaryCompactor
-- [x] `@omni-ai/cli` — `omni run`, `omni list`, `--session`, `--verbose`, `--output`
+- [x] `@omni-ai/cli` — `omni run`, `omni list`, `omni chain`, `omni init`, `--session`, `--verbose`, `--stream`, `--output`
 - [x] Bootstrap `createRuntime()` — API de alto nível para uso programático
 - [x] 21 agentes prontos — backend (7), frontend (5), ux (5), qa (4)
 - [x] Herança de provider/modelo — agentes herdam do config, podem sobrescrever
@@ -969,6 +1026,57 @@ pnpm build && omni list agents
 - [x] `omni init` — wizard interativo para configuração inicial
 - [x] Suporte a embeddings — `IProvider.embed()` com vetores de contexto (`SemanticMemoryStore`, `VectorIndex`)
 - [x] Testes automatizados por pacote — 63 testes, 8 pacotes (vitest)
+- [x] ESLint + typescript-eslint — linting automático em todos os pacotes (`pnpm lint`)
+
+### Próximos passos
+
+**CLI & DX**
+- [ ] `omni new` — scaffold interativo para criar agente, skill ou provider a partir de template
+- [ ] `omni eval` — avaliação em lote: roda agente contra dataset de `(input, expected)` e reporta acurácia
+- [ ] `omni serve` — inicia servidor HTTP local para chamar agentes via REST ou SSE (sem CLI)
+- [ ] `omni watch` — reexecuta agente automaticamente quando arquivos do projeto mudam (modo dev)
+- [ ] `omni export` — exporta histórico de sessão em markdown ou JSON
+
+**Providers & resiliência**
+- [ ] `@omni-ai/provider-google` — adapter para Gemini 1.5 / 2.0 (chat, vision, embeddings)
+- [ ] Retry automático com backoff exponencial — recuperação transparente de rate-limit e erros 5xx
+- [ ] Fallback de provider — rota pedidos para um provider secundário quando o primário falha
+
+**Skills**
+- [ ] `@omni-ai/skills-git` — git status, diff, log, commit message (para agentes de review e release)
+- [ ] `@omni-ai/skills-http` — chamadas HTTP autenticadas (OAuth/Bearer) para integrar APIs externas
+- [ ] Suporte multimodal — skill `analyze-image` para análise de screenshots, diagramas e mockups
+
+**Core**
+- [ ] Compatibilidade MCP (Model Context Protocol) — expor skills como tools MCP e consumir servidores MCP externos
+- [ ] Agentes paralelos — `parallel()` wrapper para rodar agentes concorrentemente e agregar resultados
+- [ ] `SkillMiddleware` — hooks de interceptação para logging, rate-limiting e cache de tool calls
+- [ ] Publicação npm — publicar os pacotes `@omni-ai/*` no registro público do npm
+
+---
+
+## Troubleshooting
+
+**`omni: command not found`**
+O CLI não está vinculado globalmente. Execute `pnpm --filter @omni-ai/cli link --global` na raiz do `omni-ai`, ou use `node packages/cli/dist/bin.js` diretamente.
+
+**`Provider "anthropic" not found in config`**
+O arquivo `config/omni-ai.yaml` não existe ou não declara o provider. Execute `omni init` para criá-lo, ou copie `config/omni-ai.example.yaml`.
+
+**`Error: ANTHROPIC_API_KEY is not set`**
+A variável de ambiente não está carregada. Verifique se `.env` existe e contém a chave. O CLI carrega `.env` automaticamente, mas você pode validar com `node -e "require('dotenv').config(); console.log(process.env.ANTHROPIC_API_KEY)"`.
+
+**`maxIterations exceeded`**
+O agente atingiu o limite de iterações sem concluir. Aumente `maxIterations` no YAML do agente ou torne o prompt mais específico para reduzir o número de tool calls.
+
+**Tokens consumidos muito altos**
+Use `ObservationMaskingCompactor` via API programática para mascarar tool results antigos. Reduz o contexto em até 70% em agentes intensivos em leitura de arquivos.
+
+**`Access denied: path resolves outside the working directory`**
+O agente tentou acessar um arquivo fora do `cwd`. Execute o comando de dentro do diretório do projeto alvo, ou verifique se o agente está usando paths relativos corretos.
+
+**Build falha com `Cannot find module`**
+O pacote referenciado não foi buildado ainda. Execute `pnpm build` na raiz para compilar todos os pacotes na ordem correta de dependências.
 
 ---
 

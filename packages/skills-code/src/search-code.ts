@@ -22,9 +22,9 @@ const InputSchema = z.object({
     .describe("Treat pattern as a regular expression"),
 });
 
-type Input = z.infer<typeof InputSchema>;
+export type SearchCodeInput = z.infer<typeof InputSchema>;
 
-interface SearchMatch {
+export interface SearchMatch {
   file: string;
   line: number;
   content: string;
@@ -71,12 +71,12 @@ async function walkAndSearch(
   }
 }
 
-export const searchCodeSkill: ISkill<Input, SearchMatch[]> = {
+export const searchCodeSkill: ISkill<SearchCodeInput, SearchMatch[]> = {
   name: "search-code",
   description:
     "Search for a text pattern across TypeScript/TSX source files. Use this to find existing components, hooks, types or patterns before generating new code — avoiding duplicates and understanding existing conventions.",
 
-  async execute(input: Input): Promise<SearchMatch[]> {
+  async execute(input: SearchCodeInput): Promise<SearchMatch[]> {
     const { directory, pattern, extensions, maxResults, useRegex } =
       InputSchema.parse(input);
 

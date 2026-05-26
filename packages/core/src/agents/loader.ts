@@ -1,5 +1,4 @@
 import { readFile } from "fs/promises";
-import { resolve } from "path";
 import YAML from "yaml";
 import { AgentConfigSchema } from "../config/schema.js";
 import { createProvider } from "../providers/registry.js";

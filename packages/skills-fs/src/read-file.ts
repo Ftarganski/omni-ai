@@ -7,7 +7,7 @@ const InputSchema = z.object({
   path: z.string().describe("Absolute or relative path to the file to read"),
 });
 
-type Input = z.infer<typeof InputSchema>;
+export type ReadFileInput = z.infer<typeof InputSchema>;
 
 function assertSafePath(inputPath: string): string {
   const cwd = process.cwd();
@@ -21,12 +21,12 @@ function assertSafePath(inputPath: string): string {
   return resolved;
 }
 
-export const readFileSkill: ISkill<Input, string> = {
+export const readFileSkill: ISkill<ReadFileInput, string> = {
   name: "read-file",
   description:
     "Read the full text content of a file. Use this to inspect existing components, hooks, pages, config files or any source file before generating new code.",
 
-  async execute(input: Input): Promise<string> {
+  async execute(input: ReadFileInput): Promise<string> {
     const { path } = InputSchema.parse(input);
     const safePath = assertSafePath(path);
     return await readFile(safePath, "utf-8");
