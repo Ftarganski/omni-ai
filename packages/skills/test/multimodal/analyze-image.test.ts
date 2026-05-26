@@ -1,13 +1,12 @@
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SkillContext } from "@omni-ai/core";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { analyzeImageSkill } from "../../src/multimodal/analyze-image.js";
 
 // Minimal 1×1 white PNG (base64)
-const TINY_PNG_B64 =
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg==";
+const TINY_PNG_B64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg==";
 
 let tempDir: string;
 
@@ -46,6 +45,7 @@ beforeEach(async () => {
 afterEach(async () => {
   await rm(tempDir, { recursive: true, force: true });
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe("analyzeImageSkill", () => {
@@ -87,5 +87,49 @@ describe("analyzeImageSkill", () => {
   it("throws when no image source is provided", async () => {
     const ctx = visionCtx();
     await expect(analyzeImageSkill.execute({ prompt: "Describe" } as never, ctx)).rejects.toThrow();
+  });
+
+  it("fetches an image from a URL", async () => {
+    const imageBytes = Buffer.from(TINY_PNG_B64, "base64");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "OK",
+        headers: { get: (key: string) => (key === "content-type" ? "image/png" : null) },
+        arrayBuffer: () => Promise.resolve(imageBytes.buffer),
+      })
+    );
+    const ctx = visionCtx("URL image description.");
+    const result = await analyzeImageSkill.execute(
+      { imageUrl: "https://example.com/image.png", prompt: "Describe" },
+      ctx
+    );
+    expect(result.analysis).toBe("URL image description.");
+    expect(ctx.provider.complete).toHaveBeenCalledOnce();
+  });
+
+  it("throws when URL image fetch returns non-2xx", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: "Not Found",
+        headers: { get: () => null },
+      })
+    );
+    const ctx = visionCtx();
+    await expect(
+      analyzeImageSkill.execute({ imageUrl: "https://example.com/missing.png", prompt: "Describe" }, ctx)
+    ).rejects.toThrow("Failed to fetch image");
+  });
+
+  it("throws when imageBase64 is provided without mimeType", async () => {
+    const ctx = visionCtx();
+    await expect(
+      analyzeImageSkill.execute({ imageBase64: TINY_PNG_B64, prompt: "Describe" } as never, ctx)
+    ).rejects.toThrow("mimeType");
   });
 });

@@ -33,7 +33,7 @@ describe("OmniAiConfigSchema", () => {
     };
     const result = OmniAiConfigSchema.parse(config);
     expect(result.agents).toHaveLength(1);
-    expect(result.agents![0].name).toBe("inline-agent");
+    expect(result.agents?.[0].name).toBe("inline-agent");
   });
 
   it("rejects config with empty providers array", () => {

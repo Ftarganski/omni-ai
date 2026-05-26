@@ -1,6 +1,6 @@
-import { readFile } from "fs/promises";
+import { readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 import { glob } from "glob";
-import { dirname, resolve } from "path";
 import YAML from "yaml";
 import { Agent } from "./agents/agent.js";
 import { loadAgent } from "./agents/loader.js";

@@ -1,0 +1,23 @@
+# Normalize all text files to LF in the repository
+* text=auto eol=lf
+
+# Explicit overrides for common text formats
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.js   text eol=lf
+*.mjs  text eol=lf
+*.cjs  text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml  text eol=lf
+*.md   text eol=lf
+*.txt  text eol=lf
+*.sh   text eol=lf
+
+# Binary files — no line-ending conversion
+*.png  binary
+*.jpg  binary
+*.gif  binary
+*.ico  binary
+*.woff binary
+*.woff2 binary

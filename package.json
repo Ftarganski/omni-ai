@@ -12,12 +12,14 @@
     "lint": "pnpm -r lint",
     "format": "pnpm -r format",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "omni": "node packages/cli/dist/bin.js"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
     "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^4.1.7",
     "typescript": "^5.7.0",
     "vitest": "^4.1.7"
   },

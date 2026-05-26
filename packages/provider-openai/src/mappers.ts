@@ -27,10 +27,7 @@ export function toOpenAIMessages(messages: Message[]): OpenAI.ChatCompletionMess
     // user role supports text + image parts
     return {
       role: "user",
-      content:
-        typeof m.content === "string"
-          ? m.content
-          : m.content.map(toOpenAIUserContentPart),
+      content: typeof m.content === "string" ? m.content : m.content.map(toOpenAIUserContentPart),
     };
   });
 }

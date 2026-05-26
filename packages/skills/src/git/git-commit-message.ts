@@ -39,11 +39,7 @@ export const gitCommitMessageSkill: ISkill<GitCommitMessageInput, GitCommitMessa
       return { message: "chore: no changes staged" };
     }
 
-    const promptParts = [
-      hint ? `Hint from the developer: ${hint}` : null,
-      "--- GIT DIFF ---",
-      diff.slice(0, 12_000),
-    ]
+    const promptParts = [hint ? `Hint from the developer: ${hint}` : null, "--- GIT DIFF ---", diff.slice(0, 12_000)]
       .filter(Boolean)
       .join("\n");
 

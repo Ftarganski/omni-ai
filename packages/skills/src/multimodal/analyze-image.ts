@@ -48,7 +48,7 @@ async function loadImage(input: z.infer<typeof InputSchema>): Promise<{ data: st
     const res = await fetch(input.imageUrl);
     if (!res.ok) throw new Error(`Failed to fetch image: ${res.status} ${res.statusText}`);
     const contentType = res.headers.get("content-type") ?? "";
-    const mimeType = (input.mimeType ?? (SUPPORTED_MIME.find((m) => contentType.startsWith(m)) as SupportedMime));
+    const mimeType = input.mimeType ?? (SUPPORTED_MIME.find((m) => contentType.startsWith(m)) as SupportedMime);
     if (!mimeType) throw new Error(`Unsupported content-type "${contentType}"`);
     const buffer = await res.arrayBuffer();
     return { data: Buffer.from(buffer).toString("base64"), mimeType };

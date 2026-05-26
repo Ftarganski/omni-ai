@@ -1,4 +1,4 @@
-import { readFile } from "fs/promises";
+import { readFile } from "node:fs/promises";
 import YAML from "yaml";
 import type { OmniAiConfig } from "../config/schema.js";
 import { AgentConfigSchema } from "../config/schema.js";

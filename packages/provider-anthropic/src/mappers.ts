@@ -1,5 +1,12 @@
 import type Anthropic from "@anthropic-ai/sdk";
-import type { CompletionRequest, CompletionResponse, ContentPart, Message, ToolCall, ToolDefinition } from "@omni-ai/core";
+import type {
+  CompletionRequest,
+  CompletionResponse,
+  ContentPart,
+  Message,
+  ToolCall,
+  ToolDefinition,
+} from "@omni-ai/core";
 
 function toAnthropicContentPart(part: ContentPart): Anthropic.ContentBlockParam {
   if (part.type === "text") return { type: "text", text: part.text };
@@ -14,10 +21,7 @@ export function toAnthropicMessages(messages: Message[]): Anthropic.MessageParam
     .filter((m) => m.role !== "system")
     .map((m) => ({
       role: m.role as "user" | "assistant",
-      content:
-        typeof m.content === "string"
-          ? m.content
-          : m.content.map(toAnthropicContentPart),
+      content: typeof m.content === "string" ? m.content : m.content.map(toAnthropicContentPart),
     }));
 }
 
