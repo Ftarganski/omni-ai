@@ -1,17 +1,18 @@
-import type {
-  AgentConfig,
-  AgentRunOptions,
-  AgentRunResult,
-  IAgent,
-  IMemoryStore,
-  IProvider,
-  ISkill,
-  MemoryEntry,
-  Message,
-  SessionId,
-  SkillContext,
-  ToolCall,
-  ToolDefinition,
+import {
+  type AgentConfig,
+  type AgentRunOptions,
+  type AgentRunResult,
+  contentToString,
+  type IAgent,
+  type IMemoryStore,
+  type IProvider,
+  type ISkill,
+  type MemoryEntry,
+  type Message,
+  type SessionId,
+  type SkillContext,
+  type ToolCall,
+  type ToolDefinition,
 } from "../types.js";
 
 export class Agent implements IAgent {
@@ -111,7 +112,7 @@ export class Agent implements IAgent {
     if (!store || !session || messages.length === 0) return;
     const entries: MemoryEntry[] = messages.map((m) => ({
       role: m.role,
-      content: m.content,
+      content: contentToString(m.content),
       timestamp: Date.now(),
     }));
     await store.saveMessages(session, entries);

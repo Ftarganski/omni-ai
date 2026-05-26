@@ -1025,6 +1025,10 @@ pnpm build && omni list agents
 - [x] Encadeamento de agentes — output de um agente como input de outro (`omni chain`)
 - [x] `omni init` — wizard interativo para configuração inicial
 - [x] Suporte a embeddings — `IProvider.embed()` com vetores de contexto (`SemanticMemoryStore`, `VectorIndex`)
+- [x] `@omni-ai/skills-git` — git-status, git-diff, git-log, git-commit-message (geração LLM de mensagem de commit)
+- [x] `@omni-ai/skills-http` — http-request autenticado (Bearer, Basic, OAuth2 client-credentials)
+- [x] `@omni-ai/skills-multimodal` — analyze-image (análise de imagens via providers com visão)
+- [x] Suporte multimodal — `ContentPart[]` em `Message.content`; providers Anthropic e OpenAI atualizados
 - [x] Testes automatizados por pacote — 63 testes, 8 pacotes (vitest)
 - [x] ESLint + typescript-eslint — linting automático em todos os pacotes (`pnpm lint`)
 
@@ -1043,9 +1047,9 @@ pnpm build && omni list agents
 - [ ] Fallback de provider — rota pedidos para um provider secundário quando o primário falha
 
 **Skills**
-- [ ] `@omni-ai/skills-git` — git status, diff, log, commit message (para agentes de review e release)
-- [ ] `@omni-ai/skills-http` — chamadas HTTP autenticadas (OAuth/Bearer) para integrar APIs externas
-- [ ] Suporte multimodal — skill `analyze-image` para análise de screenshots, diagramas e mockups
+- [x] `@omni-ai/skills-git` — git status, diff, log, commit message (para agentes de review e release)
+- [x] `@omni-ai/skills-http` — chamadas HTTP autenticadas (OAuth/Bearer) para integrar APIs externas
+- [x] Suporte multimodal — skill `analyze-image` para análise de screenshots, diagramas e mockups
 
 **Core**
 - [ ] Compatibilidade MCP (Model Context Protocol) — expor skills como tools MCP e consumir servidores MCP externos

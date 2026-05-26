@@ -1,11 +1,38 @@
-import type { CompletionResponse, Message, ToolCall, ToolDefinition } from "@omni-ai/core";
+import type { CompletionResponse, ContentPart, Message, ToolCall, ToolDefinition } from "@omni-ai/core";
 import type OpenAI from "openai";
 
+function toOpenAIUserContentPart(part: ContentPart): OpenAI.ChatCompletionContentPart {
+  if (part.type === "text") return { type: "text", text: part.text };
+  return {
+    type: "image_url",
+    image_url: { url: `data:${part.mimeType};base64,${part.data}` },
+  };
+}
+
+function contentAsString(content: string | ContentPart[]): string {
+  if (typeof content === "string") return content;
+  return content.map((p) => (p.type === "text" ? p.text : "")).join("");
+}
+
 export function toOpenAIMessages(messages: Message[]): OpenAI.ChatCompletionMessageParam[] {
-  return messages.map((m) => ({
-    role: m.role as "user" | "assistant" | "system",
-    content: m.content,
-  }));
+  return messages.map((m): OpenAI.ChatCompletionMessageParam => {
+    if (m.role === "system") {
+      // System messages only support plain text in the OpenAI API
+      return { role: "system", content: contentAsString(m.content) };
+    }
+    if (m.role === "assistant") {
+      // Assistant turn: images are not valid in assistant content
+      return { role: "assistant", content: contentAsString(m.content) };
+    }
+    // user role supports text + image parts
+    return {
+      role: "user",
+      content:
+        typeof m.content === "string"
+          ? m.content
+          : m.content.map(toOpenAIUserContentPart),
+    };
+  });
 }
 
 export function toOpenAITools(tools: ToolDefinition[]): OpenAI.ChatCompletionTool[] {
