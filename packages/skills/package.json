@@ -1,0 +1,52 @@
+{
+  "name": "@omni-ai/skills",
+  "version": "0.1.0",
+  "description": "All built-in skills for omni-ai — fs, code, ux, git, http and multimodal",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./fs": {
+      "import": "./dist/fs/index.js",
+      "types": "./dist/fs/index.d.ts"
+    },
+    "./code": {
+      "import": "./dist/code/index.js",
+      "types": "./dist/code/index.d.ts"
+    },
+    "./ux": {
+      "import": "./dist/ux/index.js",
+      "types": "./dist/ux/index.d.ts"
+    },
+    "./git": {
+      "import": "./dist/git/index.js",
+      "types": "./dist/git/index.d.ts"
+    },
+    "./http": {
+      "import": "./dist/http/index.js",
+      "types": "./dist/http/index.d.ts"
+    },
+    "./multimodal": {
+      "import": "./dist/multimodal/index.js",
+      "types": "./dist/multimodal/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "biome check src/ test/",
+    "format": "biome check --write src/ test/"
+  },
+  "dependencies": {
+    "@omni-ai/core": "workspace:*",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}

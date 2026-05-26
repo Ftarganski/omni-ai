@@ -44,9 +44,30 @@ export interface MemoryConfig {
   maxContextTokens?: number;
 }
 
+export interface TextContentPart {
+  type: "text";
+  text: string;
+}
+
+export interface ImageContentPart {
+  type: "image";
+  /** MIME type of the image */
+  mimeType: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+  /** Base64-encoded image data */
+  data: string;
+}
+
+export type ContentPart = TextContentPart | ImageContentPart;
+
 export interface Message {
   role: Role;
-  content: string;
+  content: string | ContentPart[];
+}
+
+/** Converts message content to a plain string (images become placeholders). */
+export function contentToString(content: string | ContentPart[]): string {
+  if (typeof content === "string") return content;
+  return content.map((p) => (p.type === "text" ? p.text : `[image:${p.mimeType}]`)).join("");
 }
 
 export interface ToolDefinition {
