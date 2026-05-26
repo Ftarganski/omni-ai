@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { InMemoryStore } from "../src/stores/in-memory.js";
 
 const session = { resourceId: "user1", threadId: "thread1" };

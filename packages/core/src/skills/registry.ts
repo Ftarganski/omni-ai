@@ -11,9 +11,7 @@ export class SkillRegistry {
   get(name: string): ISkill {
     const skill = this.skills.get(name);
     if (!skill) {
-      throw new Error(
-        `Skill "${name}" not found. Available: ${[...this.skills.keys()].join(", ")}`
-      );
+      throw new Error(`Skill "${name}" not found. Available: ${[...this.skills.keys()].join(", ")}`);
     }
     return skill;
   }

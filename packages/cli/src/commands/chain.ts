@@ -1,17 +1,11 @@
-import { writeFile } from "fs/promises";
-import chalk from "chalk";
+import { writeFile } from "node:fs/promises";
 import { createRuntime } from "@omni-ai/core";
-import { readFileSkill, writeFileSkill, listDirectorySkill } from "@omni-ai/skills-fs";
 import { searchCodeSkill } from "@omni-ai/skills-code";
+import { listDirectorySkill, readFileSkill, writeFileSkill } from "@omni-ai/skills-fs";
 import { auditAccessibilitySkill } from "@omni-ai/skills-ux";
+import chalk from "chalk";
 import { resolveConfigPath } from "../utils/config-path.js";
-import {
-  agentHeader,
-  iterationLine,
-  tokenSummary,
-  errorLine,
-  savedLine,
-} from "../utils/format.js";
+import { agentHeader, errorLine, iterationLine, savedLine, tokenSummary } from "../utils/format.js";
 
 import "@omni-ai/provider-anthropic";
 import "@omni-ai/provider-openai";
@@ -23,11 +17,7 @@ interface ChainOptions {
   stream?: boolean;
 }
 
-export async function chainCommand(
-  prompt: string,
-  agents: string[],
-  opts: ChainOptions
-): Promise<void> {
+export async function chainCommand(prompt: string, agents: string[], opts: ChainOptions): Promise<void> {
   if (agents.length < 2) {
     console.error(errorLine("omni chain requires at least 2 agents"));
     process.exit(1);
@@ -35,27 +25,16 @@ export async function chainCommand(
 
   const configPath = opts.config ?? resolveConfigPath();
 
-  const skills = [
-    readFileSkill,
-    writeFileSkill,
-    listDirectorySkill,
-    searchCodeSkill,
-    auditAccessibilitySkill,
-  ];
+  const skills = [readFileSkill, writeFileSkill, listDirectorySkill, searchCodeSkill, auditAccessibilitySkill];
 
-  let runtime;
-  try {
-    runtime = await createRuntime({ configPath, skills });
-  } catch (err) {
+  const runtime = await createRuntime({ configPath, skills }).catch((err: unknown) => {
     console.error(errorLine(`Failed to load config: ${err instanceof Error ? err.message : String(err)}`));
     process.exit(1);
-  }
+  });
 
   const providerLabel = `${runtime.config.defaultProvider} / ${runtime.config.providers.find((p) => p.name === runtime.config.defaultProvider)?.defaultModel ?? "default"}`;
 
-  const onToken = opts.stream
-    ? (chunk: string) => process.stdout.write(chunk)
-    : undefined;
+  const onToken = opts.stream ? (chunk: string) => process.stdout.write(chunk) : undefined;
 
   let currentInput = prompt;
   let totalInput = 0;
@@ -70,18 +49,15 @@ export async function chainCommand(
 
     if (opts.stream) process.stdout.write("\n");
 
-    let result;
-    try {
-      result = await runtime.run(agentName, currentInput, { onToken });
-    } catch (err) {
+    const result = await runtime.run(agentName, currentInput, { onToken }).catch((err: unknown) => {
       console.error(errorLine(err instanceof Error ? err.message : String(err)));
       process.exit(1);
-    }
+    });
 
     if (opts.stream) {
       process.stdout.write("\n");
     } else if (opts.verbose) {
-      console.log("\n" + result.output + "\n");
+      console.log(`\n${result.output}\n`);
     }
 
     console.log(iterationLine(result.iterations));
@@ -95,12 +71,12 @@ export async function chainCommand(
     currentInput = result.output;
 
     if (i < agents.length - 1) {
-      console.log(chalk.gray(`\n  ↓  saída passada para: `) + chalk.cyan(agents[i + 1]) + "\n");
+      console.log(`${chalk.gray(`\n  ↓  saída passada para: `) + chalk.cyan(agents[i + 1])}\n`);
     }
   }
 
   if (!opts.stream && !opts.verbose) {
-    console.log("\n" + lastOutput + "\n");
+    console.log(`\n${lastOutput}\n`);
   }
 
   if (opts.output) {

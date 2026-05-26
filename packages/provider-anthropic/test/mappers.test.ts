@@ -1,11 +1,6 @@
-import { describe, it, expect } from "vitest";
-import {
-  toAnthropicMessages,
-  toAnthropicTools,
-  extractSystemPrompt,
-  fromAnthropicResponse,
-} from "../src/mappers.js";
-import type { Message, ToolDefinition, CompletionRequest } from "../../core/src/types.js";
+import { describe, expect, it } from "vitest";
+import type { CompletionRequest, Message, ToolDefinition } from "../../core/src/types.js";
+import { extractSystemPrompt, fromAnthropicResponse, toAnthropicMessages, toAnthropicTools } from "../src/mappers.js";
 
 describe("toAnthropicMessages", () => {
   it("maps user and assistant messages", () => {
@@ -55,7 +50,10 @@ describe("extractSystemPrompt", () => {
 
   it("extracts system prompt from messages", () => {
     const req = {
-      messages: [{ role: "system", content: "From messages" }, { role: "user", content: "hi" }],
+      messages: [
+        { role: "system", content: "From messages" },
+        { role: "user", content: "hi" },
+      ],
     } as unknown as CompletionRequest;
     expect(extractSystemPrompt(req)).toBe("From messages");
   });
@@ -86,9 +84,7 @@ describe("fromAnthropicResponse", () => {
 
   it("maps tool_use blocks to toolCalls", () => {
     const msg = {
-      content: [
-        { type: "tool_use", id: "tu1", name: "read-file", input: { path: "src/app.ts" } },
-      ],
+      content: [{ type: "tool_use", id: "tu1", name: "read-file", input: { path: "src/app.ts" } }],
       model: "claude-sonnet-4-6",
       usage: { input_tokens: 20, output_tokens: 8 },
     } as never;

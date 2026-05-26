@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { toOpenAIMessages, toOpenAITools, fromOpenAIResponse } from "../src/mappers.js";
+import { describe, expect, it } from "vitest";
 import type { Message, ToolDefinition } from "../../core/src/types.js";
+import { fromOpenAIResponse, toOpenAIMessages, toOpenAITools } from "../src/mappers.js";
 
 describe("toOpenAIMessages", () => {
   it("maps all roles including system", () => {
@@ -67,7 +67,7 @@ describe("fromOpenAIResponse", () => {
     } as never;
     const result = fromOpenAIResponse(response, "openai");
     expect(result.toolCalls).toHaveLength(1);
-    expect(result.toolCalls![0]).toEqual({
+    expect(result.toolCalls?.[0]).toEqual({
       id: "call_1",
       name: "read-file",
       arguments: { path: "src/app.ts" },

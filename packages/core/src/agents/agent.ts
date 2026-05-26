@@ -1,17 +1,17 @@
 import type {
-  IAgent,
-  IProvider,
-  ISkill,
-  IMemoryStore,
   AgentConfig,
   AgentRunOptions,
   AgentRunResult,
-  Message,
+  IAgent,
+  IMemoryStore,
+  IProvider,
+  ISkill,
   MemoryEntry,
+  Message,
   SessionId,
   SkillContext,
-  ToolDefinition,
   ToolCall,
+  ToolDefinition,
 } from "../types.js";
 
 export class Agent implements IAgent {
@@ -33,9 +33,8 @@ export class Agent implements IAgent {
     const maxCtxTokens = memCfg?.maxContextTokens ?? 80_000;
 
     // Load history from store and build initial messages array
-    const history: Message[] = session && store
-      ? (await store.loadMessages(session)).map(e => ({ role: e.role, content: e.content }))
-      : [];
+    const history: Message[] =
+      session && store ? (await store.loadMessages(session)).map((e) => ({ role: e.role, content: e.content })) : [];
 
     const messages: Message[] = [...history];
     // Track only messages added in this run for persistence
@@ -110,7 +109,7 @@ export class Agent implements IAgent {
     messages: Message[]
   ): Promise<void> {
     if (!store || !session || messages.length === 0) return;
-    const entries: MemoryEntry[] = messages.map(m => ({
+    const entries: MemoryEntry[] = messages.map((m) => ({
       role: m.role,
       content: m.content,
       timestamp: Date.now(),

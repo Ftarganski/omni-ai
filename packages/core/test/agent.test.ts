@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { Agent } from "../src/agents/agent.js";
-import type { IProvider, ISkill, CompletionResponse, CompletionRequest } from "../src/types.js";
+import type { CompletionRequest, CompletionResponse, IProvider, ISkill } from "../src/types.js";
 
 function makeProvider(responses: Partial<CompletionResponse>[]): IProvider {
   let call = 0;
@@ -44,11 +44,7 @@ describe("Agent", () => {
       },
       { content: "Final answer" },
     ]);
-    const agent = new Agent(
-      { name: "test", description: "", systemPrompt: "sys" },
-      provider,
-      [echoSkill]
-    );
+    const agent = new Agent({ name: "test", description: "", systemPrompt: "sys" }, provider, [echoSkill]);
     const result = await agent.run({ input: "go" });
     expect(result.output).toBe("Final answer");
     expect(result.iterations).toBe(2);
@@ -61,11 +57,9 @@ describe("Agent", () => {
         toolCalls: [{ id: "tc1", name: "echo", arguments: {} }],
       })
     );
-    const agent = new Agent(
-      { name: "test", description: "", systemPrompt: "sys", maxIterations: 3 },
-      provider,
-      [echoSkill]
-    );
+    const agent = new Agent({ name: "test", description: "", systemPrompt: "sys", maxIterations: 3 }, provider, [
+      echoSkill,
+    ]);
     await expect(agent.run({ input: "go" })).rejects.toThrow(/maxIterations/);
   });
 
@@ -81,7 +75,9 @@ describe("Agent", () => {
     const failSkill: ISkill = {
       name: "fail",
       description: "always fails",
-      execute: async () => { throw new Error("skill error"); },
+      execute: async () => {
+        throw new Error("skill error");
+      },
     };
     const provider = makeProvider([
       { content: "", toolCalls: [{ id: "tc1", name: "fail", arguments: {} }] },

@@ -1,12 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { OmniAiConfigSchema } from "../src/config/schema.js";
 
 const minimalValid = {
   version: "1",
   defaultProvider: "anthropic",
-  providers: [
-    { name: "anthropic", type: "anthropic", apiKey: "sk-ant-test", defaultModel: "claude-sonnet-4-6" },
-  ],
+  providers: [{ name: "anthropic", type: "anthropic", apiKey: "sk-ant-test", defaultModel: "claude-sonnet-4-6" }],
 };
 
 describe("OmniAiConfigSchema", () => {
@@ -39,9 +37,7 @@ describe("OmniAiConfigSchema", () => {
   });
 
   it("rejects config with empty providers array", () => {
-    expect(() =>
-      OmniAiConfigSchema.parse({ ...minimalValid, providers: [] })
-    ).toThrow();
+    expect(() => OmniAiConfigSchema.parse({ ...minimalValid, providers: [] })).toThrow();
   });
 
   it("accepts a provider with optional baseUrl", () => {

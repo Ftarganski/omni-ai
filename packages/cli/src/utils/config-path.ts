@@ -1,5 +1,5 @@
-import { fileURLToPath } from "url";
-import { dirname, resolve } from "path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 /**
  * Resolves the default omni-ai.yaml path relative to the CLI package root.

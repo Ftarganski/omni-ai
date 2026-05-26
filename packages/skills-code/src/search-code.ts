@@ -1,25 +1,14 @@
-import type { ISkill } from "@omni-ai/core";
-import { readFile, readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import type { ISkill } from "@omni-ai/core";
 import { z } from "zod";
 
 const InputSchema = z.object({
   directory: z.string().describe("Root directory to search in"),
   pattern: z.string().describe("Text substring or regex pattern to search for"),
-  extensions: z
-    .array(z.string())
-    .default([".ts", ".tsx"])
-    .describe("File extensions to include in the search"),
-  maxResults: z
-    .number()
-    .int()
-    .positive()
-    .default(30)
-    .describe("Maximum number of matching lines to return"),
-  useRegex: z
-    .boolean()
-    .default(false)
-    .describe("Treat pattern as a regular expression"),
+  extensions: z.array(z.string()).default([".ts", ".tsx"]).describe("File extensions to include in the search"),
+  maxResults: z.number().int().positive().default(30).describe("Maximum number of matching lines to return"),
+  useRegex: z.boolean().default(false).describe("Treat pattern as a regular expression"),
 });
 
 export type SearchCodeInput = z.infer<typeof InputSchema>;
@@ -62,10 +51,7 @@ async function walkAndSearch(
     const fullPath = join(dir, entry.name);
     if (entry.isDirectory()) {
       await walkAndSearch(fullPath, extensions, matcher, results, maxResults);
-    } else if (
-      entry.isFile() &&
-      extensions.some((ext) => entry.name.endsWith(ext))
-    ) {
+    } else if (entry.isFile() && extensions.some((ext) => entry.name.endsWith(ext))) {
       await searchInFile(fullPath, matcher, results, maxResults);
     }
   }
@@ -77,8 +63,7 @@ export const searchCodeSkill: ISkill<SearchCodeInput, SearchMatch[]> = {
     "Search for a text pattern across TypeScript/TSX source files. Use this to find existing components, hooks, types or patterns before generating new code — avoiding duplicates and understanding existing conventions.",
 
   async execute(input: SearchCodeInput): Promise<SearchMatch[]> {
-    const { directory, pattern, extensions, maxResults, useRegex } =
-      InputSchema.parse(input);
+    const { directory, pattern, extensions, maxResults, useRegex } = InputSchema.parse(input);
 
     let matcher: (line: string) => boolean;
     if (useRegex) {

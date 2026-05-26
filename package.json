@@ -10,15 +10,15 @@
     "build": "pnpm -r build",
     "dev": "pnpm -r dev",
     "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "omni": "node packages/cli/dist/bin.js"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.15",
     "@types/node": "^22.0.0",
-    "eslint": "^10.4.0",
     "typescript": "^5.7.0",
-    "typescript-eslint": "^8.60.0",
     "vitest": "^4.1.7"
   },
   "engines": {

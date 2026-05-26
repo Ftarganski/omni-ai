@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { agentHeader, stepLine, tokenSummary, iterationLine, errorLine, savedLine } from "../src/utils/format.js";
+import { describe, expect, it } from "vitest";
+import { agentHeader, errorLine, iterationLine, savedLine, stepLine, tokenSummary } from "../src/utils/format.js";
 
 describe("format utilities", () => {
   it("agentHeader includes agent name and provider/model", () => {

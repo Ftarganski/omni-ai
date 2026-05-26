@@ -1,6 +1,6 @@
-import type { ISkill } from "@omni-ai/core";
 import { readFile } from "node:fs/promises";
 import { resolve, sep } from "node:path";
+import type { ISkill } from "@omni-ai/core";
 import { z } from "zod";
 
 const InputSchema = z.object({
@@ -14,9 +14,7 @@ function assertSafePath(inputPath: string): string {
   const resolved = resolve(cwd, inputPath);
   const cwdWithSep = cwd.endsWith(sep) ? cwd : cwd + sep;
   if (resolved !== cwd && !resolved.startsWith(cwdWithSep)) {
-    throw new Error(
-      `Access denied: "${inputPath}" resolves outside the working directory`
-    );
+    throw new Error(`Access denied: "${inputPath}" resolves outside the working directory`);
   }
   return resolved;
 }

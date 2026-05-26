@@ -1,13 +1,13 @@
-import OpenAI from "openai";
 import type {
-  IProvider,
-  ProviderCapabilities,
   CompletionRequest,
   CompletionResponse,
   EmbeddingRequest,
   EmbeddingResponse,
+  IProvider,
+  ProviderCapabilities,
 } from "@omni-ai/core";
-import { toOpenAIMessages, toOpenAITools, fromOpenAIResponse } from "./mappers.js";
+import OpenAI from "openai";
+import { fromOpenAIResponse, toOpenAIMessages, toOpenAITools } from "./mappers.js";
 
 export class OpenAIProvider implements IProvider {
   readonly name: string;
@@ -39,10 +39,7 @@ export class OpenAIProvider implements IProvider {
   async complete(request: CompletionRequest): Promise<CompletionResponse> {
     const model = request.model ?? this.defaultModel;
     const messages = toOpenAIMessages(request.messages);
-    const tools =
-      request.tools && request.tools.length > 0
-        ? toOpenAITools(request.tools)
-        : undefined;
+    const tools = request.tools && request.tools.length > 0 ? toOpenAITools(request.tools) : undefined;
 
     if (request.onToken) {
       const stream = await this.client.chat.completions.create({
@@ -87,13 +84,20 @@ export class OpenAIProvider implements IProvider {
       const toolCalls = Object.values(toolCallAccum);
       return {
         content,
-        toolCalls: toolCalls.length > 0
-          ? toolCalls.map((tc) => ({
-              id: tc.id,
-              name: tc.name,
-              arguments: (() => { try { return JSON.parse(tc.args) as Record<string, unknown>; } catch { return {}; } })(),
-            }))
-          : undefined,
+        toolCalls:
+          toolCalls.length > 0
+            ? toolCalls.map((tc) => ({
+                id: tc.id,
+                name: tc.name,
+                arguments: (() => {
+                  try {
+                    return JSON.parse(tc.args) as Record<string, unknown>;
+                  } catch {
+                    return {};
+                  }
+                })(),
+              }))
+            : undefined,
         usage: inputTokens > 0 ? { inputTokens, outputTokens } : undefined,
         model,
         provider: this.name,

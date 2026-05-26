@@ -1,18 +1,12 @@
-import type { ISkill } from "@omni-ai/core";
 import { readdir } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
+import type { ISkill } from "@omni-ai/core";
 import { z } from "zod";
 
 const InputSchema = z.object({
   path: z.string().describe("Directory path to list"),
-  recursive: z
-    .boolean()
-    .default(false)
-    .describe("Whether to list files in subdirectories recursively"),
-  extensions: z
-    .array(z.string())
-    .optional()
-    .describe("Filter results by file extension, e.g. [\".ts\", \".tsx\"]"),
+  recursive: z.boolean().default(false).describe("Whether to list files in subdirectories recursively"),
+  extensions: z.array(z.string()).optional().describe('Filter results by file extension, e.g. [".ts", ".tsx"]'),
 });
 
 export type ListDirectoryInput = z.infer<typeof InputSchema>;
@@ -22,18 +16,12 @@ function assertSafePath(inputPath: string): string {
   const resolved = resolve(cwd, inputPath);
   const cwdWithSep = cwd.endsWith(sep) ? cwd : cwd + sep;
   if (resolved !== cwd && !resolved.startsWith(cwdWithSep)) {
-    throw new Error(
-      `Access denied: "${inputPath}" resolves outside the working directory`
-    );
+    throw new Error(`Access denied: "${inputPath}" resolves outside the working directory`);
   }
   return resolved;
 }
 
-async function walk(
-  dir: string,
-  recursive: boolean,
-  extensions?: string[]
-): Promise<string[]> {
+async function walk(dir: string, recursive: boolean, extensions?: string[]): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
   const results: string[] = [];
 
@@ -44,9 +32,7 @@ async function walk(
         results.push(...(await walk(fullPath, recursive, extensions)));
       }
     } else if (entry.isFile()) {
-      const include =
-        !extensions ||
-        extensions.some((ext) => entry.name.endsWith(ext));
+      const include = !extensions || extensions.some((ext) => entry.name.endsWith(ext));
       if (include) results.push(fullPath);
     }
   }

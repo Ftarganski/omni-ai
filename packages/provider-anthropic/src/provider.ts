@@ -1,16 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type {
-  IProvider,
-  ProviderCapabilities,
-  CompletionRequest,
-  CompletionResponse,
-} from "@omni-ai/core";
-import {
-  toAnthropicMessages,
-  toAnthropicTools,
-  extractSystemPrompt,
-  fromAnthropicResponse,
-} from "./mappers.js";
+import type { CompletionRequest, CompletionResponse, IProvider, ProviderCapabilities } from "@omni-ai/core";
+import { extractSystemPrompt, fromAnthropicResponse, toAnthropicMessages, toAnthropicTools } from "./mappers.js";
 
 export class AnthropicProvider implements IProvider {
   readonly name: string;
@@ -36,15 +26,12 @@ export class AnthropicProvider implements IProvider {
     if (request.temperature !== undefined && request.temperature > 1) {
       throw new Error(
         `Anthropic models require temperature <= 1.0 (got ${request.temperature}). ` +
-        `Update the agent YAML or use an OpenAI provider for higher temperature values.`
+          `Update the agent YAML or use an OpenAI provider for higher temperature values.`
       );
     }
     const system = extractSystemPrompt(request);
     const messages = toAnthropicMessages(request.messages);
-    const tools =
-      request.tools && request.tools.length > 0
-        ? toAnthropicTools(request.tools)
-        : undefined;
+    const tools = request.tools && request.tools.length > 0 ? toAnthropicTools(request.tools) : undefined;
 
     const params = {
       model,

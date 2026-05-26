@@ -1,17 +1,11 @@
-import { writeFile } from "fs/promises";
+import { writeFile } from "node:fs/promises";
 import { createRuntime } from "@omni-ai/core";
-import { readFileSkill, writeFileSkill, listDirectorySkill } from "@omni-ai/skills-fs";
-import { searchCodeSkill } from "@omni-ai/skills-code";
-import { auditAccessibilitySkill } from "@omni-ai/skills-ux";
 import { SQLiteMemoryStore } from "@omni-ai/memory";
+import { searchCodeSkill } from "@omni-ai/skills-code";
+import { listDirectorySkill, readFileSkill, writeFileSkill } from "@omni-ai/skills-fs";
+import { auditAccessibilitySkill } from "@omni-ai/skills-ux";
 import { resolveConfigPath } from "../utils/config-path.js";
-import {
-  agentHeader,
-  iterationLine,
-  tokenSummary,
-  errorLine,
-  savedLine,
-} from "../utils/format.js";
+import { agentHeader, errorLine, iterationLine, savedLine, tokenSummary } from "../utils/format.js";
 
 // Trigger provider registration
 import "@omni-ai/provider-anthropic";
@@ -36,20 +30,10 @@ function getDbPath(): string {
   return `${home}/.omni-ai/sessions.db`;
 }
 
-export async function runCommand(
-  agent: string,
-  prompt: string,
-  opts: RunOptions
-): Promise<void> {
+export async function runCommand(agent: string, prompt: string, opts: RunOptions): Promise<void> {
   const configPath = opts.config ?? resolveConfigPath();
 
-  const skills = [
-    readFileSkill,
-    writeFileSkill,
-    listDirectorySkill,
-    searchCodeSkill,
-    auditAccessibilitySkill,
-  ];
+  const skills = [readFileSkill, writeFileSkill, listDirectorySkill, searchCodeSkill, auditAccessibilitySkill];
 
   let memoryStore: SQLiteMemoryStore | undefined;
   let sessionId: { resourceId: string; threadId: string } | undefined;
@@ -59,40 +43,28 @@ export async function runCommand(
     memoryStore = new SQLiteMemoryStore({ path: getDbPath() });
   }
 
-  let runtime;
-  try {
-    runtime = await createRuntime({
-      configPath,
-      skills,
-      memoryStore,
-    });
-  } catch (err) {
+  const runtime = await createRuntime({ configPath, skills, memoryStore }).catch((err: unknown) => {
     console.error(errorLine(`Failed to load config: ${err instanceof Error ? err.message : String(err)}`));
     process.exit(1);
-  }
+  });
 
   const providerLabel = `${runtime.config.defaultProvider} / ${runtime.config.providers.find((p) => p.name === runtime.config.defaultProvider)?.defaultModel ?? "default"}`;
-  console.log("\n" + agentHeader(agent, providerLabel));
+  console.log(`\n${agentHeader(agent, providerLabel)}`);
 
-  const onToken = opts.stream
-    ? (chunk: string) => process.stdout.write(chunk)
-    : undefined;
+  const onToken = opts.stream ? (chunk: string) => process.stdout.write(chunk) : undefined;
 
   if (opts.stream) process.stdout.write("\n");
 
-  let result;
-  try {
-    result = await runtime.run(agent, prompt, { session: sessionId, onToken });
-  } catch (err) {
+  const result = await runtime.run(agent, prompt, { session: sessionId, onToken }).catch(async (err: unknown) => {
     console.error(errorLine(err instanceof Error ? err.message : String(err)));
     await memoryStore?.close?.();
     process.exit(1);
-  }
+  });
 
   if (opts.stream) {
     process.stdout.write("\n");
   } else {
-    console.log("\n" + result.output + "\n");
+    console.log(`\n${result.output}\n`);
   }
 
   console.log(iterationLine(result.iterations));

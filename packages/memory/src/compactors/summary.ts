@@ -3,7 +3,7 @@ import { estimateTokens } from "../utils.js";
 
 function formatForSummary(messages: Message[]): string {
   return messages
-    .map(m => {
+    .map((m) => {
       const label = m.role === "assistant" ? "Assistant" : "User/Tool";
       return `[${label}]: ${m.content}`;
     })

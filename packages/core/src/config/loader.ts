@@ -2,7 +2,7 @@ import { readFile } from "fs/promises";
 import { resolve } from "path";
 import YAML from "yaml";
 import { ZodError } from "zod";
-import { OmniAiConfigSchema, type OmniAiConfig } from "./schema.js";
+import { type OmniAiConfig, OmniAiConfigSchema } from "./schema.js";
 
 function substituteEnvVars(text: string): string {
   return text.replace(/\$\{([^}]+)\}/g, (_, name) => process.env[name] ?? "");

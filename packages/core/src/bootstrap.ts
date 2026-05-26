@@ -1,14 +1,14 @@
-import { glob } from "glob";
 import { readFile } from "fs/promises";
-import { resolve, dirname } from "path";
+import { glob } from "glob";
+import { dirname, resolve } from "path";
 import YAML from "yaml";
-import { loadConfig } from "./config/loader.js";
-import { SkillRegistry } from "./skills/registry.js";
-import { loadAgent } from "./agents/loader.js";
 import { Agent } from "./agents/agent.js";
-import { createProvider } from "./providers/registry.js";
+import { loadAgent } from "./agents/loader.js";
+import { loadConfig } from "./config/loader.js";
 import type { OmniAiConfig } from "./config/schema.js";
-import type { ISkill, IMemoryStore, AgentRunOptions, AgentRunResult } from "./types.js";
+import { createProvider } from "./providers/registry.js";
+import { SkillRegistry } from "./skills/registry.js";
+import type { AgentRunOptions, AgentRunResult, IMemoryStore, ISkill } from "./types.js";
 
 export interface AgentSummary {
   name: string;
@@ -35,9 +35,7 @@ export async function createRuntime(options?: {
     skills.register(skill);
   }
 
-  const configDir = options?.configPath
-    ? dirname(resolve(options.configPath))
-    : resolve(process.cwd(), "config");
+  const configDir = options?.configPath ? dirname(resolve(options.configPath)) : resolve(process.cwd(), "config");
 
   const agentsBaseDir = resolve(configDir, "..", config.agentsDir);
 

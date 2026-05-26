@@ -1,13 +1,12 @@
 #!/usr/bin/env node
-import { resolve } from "path";
-import { config as loadDotenv } from "dotenv";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Command } from "commander";
-import { runCommand } from "./commands/run.js";
-import { listCommand } from "./commands/list.js";
-import { initCommand } from "./commands/init.js";
+import { config as loadDotenv } from "dotenv";
 import { chainCommand } from "./commands/chain.js";
+import { initCommand } from "./commands/init.js";
+import { listCommand } from "./commands/list.js";
+import { runCommand } from "./commands/run.js";
 
 // Load .env from the omni-ai repo root (4 levels up from packages/cli/dist/)
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -16,10 +15,7 @@ loadDotenv({ path: resolve(__dirname, "..", "..", "..", ".env") });
 
 const program = new Command();
 
-program
-  .name("omni")
-  .description("omni-ai — provider-agnostic AI agents for developer workflows")
-  .version("0.1.0");
+program.name("omni").description("omni-ai — provider-agnostic AI agents for developer workflows").version("0.1.0");
 
 program
   .command("run <agent> <prompt>")

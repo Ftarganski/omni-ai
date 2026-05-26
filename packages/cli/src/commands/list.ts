@@ -1,11 +1,8 @@
-import chalk from "chalk";
 import { createRuntime, getRegisteredProviders } from "@omni-ai/core";
+import chalk from "chalk";
 import { resolveConfigPath } from "../utils/config-path.js";
 
-export async function listCommand(
-  target: string,
-  opts: { config?: string }
-): Promise<void> {
+export async function listCommand(target: string, opts: { config?: string }): Promise<void> {
   const configPath = opts.config ?? resolveConfigPath();
 
   if (target === "providers") {

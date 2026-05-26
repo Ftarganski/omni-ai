@@ -12,7 +12,8 @@
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "eslint src/ test/"
+    "lint": "biome check src/ test/",
+    "format": "biome check --write src/ test/"
   },
   "dependencies": {
     "@omni-ai/core": "workspace:*",

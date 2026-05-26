@@ -16,7 +16,8 @@
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "eslint src/ test/"
+    "lint": "biome check src/ test/",
+    "format": "biome check --write src/ test/"
   },
   "dependencies": {
     "openai": "^4.78.0",

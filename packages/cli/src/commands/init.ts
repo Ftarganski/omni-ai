@@ -1,7 +1,7 @@
-import { readFile, writeFile, access } from "node:fs/promises";
-import { resolve, dirname } from "node:path";
+import { access, readFile, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { select, input, password, confirm, checkbox } from "@inquirer/prompts";
+import { checkbox, confirm, input, password, select } from "@inquirer/prompts";
 import chalk from "chalk";
 
 // ── Path helpers ──────────────────────────────────────────────────────────────
@@ -87,11 +87,7 @@ function buildYaml(primary: ProviderConfig, extras: ProviderConfig[]): string {
 
   const providerBlocks = allProviders
     .map((p) => {
-      const lines = [
-        `  - name: ${p.name}`,
-        `    type: ${p.type}`,
-        `    apiKey: \${${p.envKey}}`,
-      ];
+      const lines = [`  - name: ${p.name}`, `    type: ${p.type}`, `    apiKey: \${${p.envKey}}`];
       if (p.baseUrl) lines.push(`    baseUrl: ${p.baseUrl}`);
       lines.push(`    defaultModel: ${p.defaultModel}`);
       return lines.join("\n");
@@ -260,7 +256,7 @@ async function setupCustom(): Promise<ProviderConfig> {
     baseUrl: `\${${envBaseUrl}}`,
     // we'll handle the base URL separately via a side-effect on envKey
     // store the real base URL in a special field
-    ...(baseUrl ? { _baseUrlValue: baseUrl } as Record<string, string> : {}),
+    ...(baseUrl ? ({ _baseUrlValue: baseUrl } as Record<string, string>) : {}),
   } as ProviderConfig & { _baseUrlValue?: string };
 }
 
@@ -276,10 +272,14 @@ async function selectProvider(label: string): Promise<ProviderConfig> {
   });
 
   switch (choice) {
-    case "copilot": return setupCopilot();
-    case "anthropic": return setupAnthropic();
-    case "openai": return setupOpenAI();
-    default: return setupCustom();
+    case "copilot":
+      return setupCopilot();
+    case "anthropic":
+      return setupAnthropic();
+    case "openai":
+      return setupOpenAI();
+    default:
+      return setupCustom();
   }
 }
 
@@ -373,8 +373,8 @@ export async function initCommand(): Promise<void> {
   // ── Summary ─────────────────────────────────────────────────────────────────
 
   console.log();
-  console.log(chalk.green("  ✓") + " config/omni-ai.yaml criado");
-  console.log(chalk.green("  ✓") + " .env atualizado");
+  console.log(`${chalk.green("  ✓")} config/omni-ai.yaml criado`);
+  console.log(`${chalk.green("  ✓")} .env atualizado`);
   console.log();
   console.log(chalk.bold("  Próximos passos:"));
   console.log();
@@ -383,16 +383,16 @@ export async function initCommand(): Promise<void> {
   console.log();
 
   if (agentSets.includes("backend")) {
-    console.log(chalk.cyan('    omni run backend-dev') + chalk.dim(' "crie o módulo de pedidos"'));
+    console.log(chalk.cyan("    omni run backend-dev") + chalk.dim(' "crie o módulo de pedidos"'));
   }
   if (agentSets.includes("frontend")) {
-    console.log(chalk.cyan('    omni run frontend-dev') + chalk.dim(' "crie a página de listagem de pedidos"'));
+    console.log(chalk.cyan("    omni run frontend-dev") + chalk.dim(' "crie a página de listagem de pedidos"'));
   }
   if (agentSets.includes("ux")) {
-    console.log(chalk.cyan('    omni run ux-lead') + chalk.dim(' "audite o componente OrderForm"'));
+    console.log(chalk.cyan("    omni run ux-lead") + chalk.dim(' "audite o componente OrderForm"'));
   }
   if (agentSets.includes("qa")) {
-    console.log(chalk.cyan('    omni run qa-lead') + chalk.dim(' "valide src/orders/"'));
+    console.log(chalk.cyan("    omni run qa-lead") + chalk.dim(' "valide src/orders/"'));
   }
 
   console.log();

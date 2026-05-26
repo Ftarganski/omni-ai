@@ -1,23 +1,14 @@
+import type { CompletionResponse, Message, ToolCall, ToolDefinition } from "@omni-ai/core";
 import type OpenAI from "openai";
-import type {
-  Message,
-  ToolDefinition,
-  ToolCall,
-  CompletionResponse,
-} from "@omni-ai/core";
 
-export function toOpenAIMessages(
-  messages: Message[]
-): OpenAI.ChatCompletionMessageParam[] {
+export function toOpenAIMessages(messages: Message[]): OpenAI.ChatCompletionMessageParam[] {
   return messages.map((m) => ({
     role: m.role as "user" | "assistant" | "system",
     content: m.content,
   }));
 }
 
-export function toOpenAITools(
-  tools: ToolDefinition[]
-): OpenAI.ChatCompletionTool[] {
+export function toOpenAITools(tools: ToolDefinition[]): OpenAI.ChatCompletionTool[] {
   return tools.map((t) => ({
     type: "function" as const,
     function: {
@@ -28,10 +19,7 @@ export function toOpenAITools(
   }));
 }
 
-export function fromOpenAIResponse(
-  response: OpenAI.ChatCompletion,
-  providerName: string
-): CompletionResponse {
+export function fromOpenAIResponse(response: OpenAI.ChatCompletion, providerName: string): CompletionResponse {
   const choice = response.choices[0];
   const message = choice.message;
   const toolCalls: ToolCall[] = [];

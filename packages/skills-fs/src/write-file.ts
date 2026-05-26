@@ -1,15 +1,12 @@
-import type { ISkill } from "@omni-ai/core";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve, sep } from "node:path";
+import type { ISkill } from "@omni-ai/core";
 import { z } from "zod";
 
 const InputSchema = z.object({
   path: z.string().describe("Absolute or relative path where the file will be written"),
   content: z.string().describe("Full text content to write"),
-  createDirs: z
-    .boolean()
-    .default(true)
-    .describe("Create intermediate directories if they do not exist"),
+  createDirs: z.boolean().default(true).describe("Create intermediate directories if they do not exist"),
 });
 
 export type WriteFileInput = z.infer<typeof InputSchema>;
@@ -19,9 +16,7 @@ function assertSafePath(inputPath: string): string {
   const resolved = resolve(cwd, inputPath);
   const cwdWithSep = cwd.endsWith(sep) ? cwd : cwd + sep;
   if (resolved !== cwd && !resolved.startsWith(cwdWithSep)) {
-    throw new Error(
-      `Access denied: "${inputPath}" resolves outside the working directory`
-    );
+    throw new Error(`Access denied: "${inputPath}" resolves outside the working directory`);
   }
   return resolved;
 }

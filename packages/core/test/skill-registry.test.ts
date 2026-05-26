@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { SkillRegistry } from "../src/skills/registry.js";
 import type { ISkill } from "../src/types.js";
 

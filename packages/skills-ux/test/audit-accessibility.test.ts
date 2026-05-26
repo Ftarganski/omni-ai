@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { auditAccessibilitySkill } from "../src/audit-accessibility.js";
 
 let tempDir: string;
@@ -21,10 +21,7 @@ describe("auditAccessibilitySkill", () => {
       `export function Comp() { return <img src="logo.png" />; }`,
       "utf-8"
     );
-    const result = await auditAccessibilitySkill.execute(
-      { path: tempDir, recursive: false },
-      {} as never
-    );
+    const result = await auditAccessibilitySkill.execute({ path: tempDir, recursive: false }, {} as never);
     expect(result.issues.some((i) => i.rule.includes("alt"))).toBe(true);
   });
 
@@ -34,10 +31,7 @@ describe("auditAccessibilitySkill", () => {
       `export function Btn() { return <div onClick={() => {}} />; }`,
       "utf-8"
     );
-    const result = await auditAccessibilitySkill.execute(
-      { path: tempDir, recursive: false },
-      {} as never
-    );
+    const result = await auditAccessibilitySkill.execute({ path: tempDir, recursive: false }, {} as never);
     expect(result.issues.some((i) => i.rule.includes("onclick"))).toBe(true);
   });
 
@@ -47,18 +41,12 @@ describe("auditAccessibilitySkill", () => {
       `export function Clean() { return <button type="button">Click me</button>; }`,
       "utf-8"
     );
-    const result = await auditAccessibilitySkill.execute(
-      { path: tempDir, recursive: false },
-      {} as never
-    );
+    const result = await auditAccessibilitySkill.execute({ path: tempDir, recursive: false }, {} as never);
     expect(result.issues.filter((i) => i.severity === "critical")).toHaveLength(0);
   });
 
   it("returns zero issues when no TSX files exist", async () => {
-    const result = await auditAccessibilitySkill.execute(
-      { path: tempDir, recursive: false },
-      {} as never
-    );
+    const result = await auditAccessibilitySkill.execute({ path: tempDir, recursive: false }, {} as never);
     expect(result.issues).toHaveLength(0);
     expect(result.totalFiles).toBe(0);
   });

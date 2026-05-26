@@ -1,16 +1,11 @@
-import type { ISkill } from "@omni-ai/core";
-import { readFile, readdir } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import type { ISkill } from "@omni-ai/core";
 import { z } from "zod";
 
 const InputSchema = z.object({
-  path: z
-    .string()
-    .describe("File path (.tsx/.ts) or directory to audit recursively"),
-  recursive: z
-    .boolean()
-    .default(false)
-    .describe("Scan all .tsx files in the directory recursively"),
+  path: z.string().describe("File path (.tsx/.ts) or directory to audit recursively"),
+  recursive: z.boolean().default(false).describe("Scan all .tsx files in the directory recursively"),
 });
 
 type Input = z.infer<typeof InputSchema>;
@@ -51,8 +46,7 @@ const RULES: HeuristicRule[] = [
     description: "onClick on a non-interactive element (div/span/p) without role or tabIndex",
     suggestion: 'Use <button> instead, or add role="button" tabIndex={0} onKeyDown handler',
     pattern: /<(div|span|p|section|article)\s[^>]*onClick/,
-    isIssue: (_match, line) =>
-      !/role=["']button["']/.test(line) && !/tabIndex/.test(line),
+    isIssue: (_match, line) => !/role=["']button["']/.test(line) && !/tabIndex/.test(line),
   },
   {
     id: "link-blank-no-rel",
@@ -82,8 +76,7 @@ const RULES: HeuristicRule[] = [
     id: "input-missing-label",
     severity: "critical",
     description: "<input> or <Input> without aria-label, aria-labelledby, or associated <label>",
-    suggestion:
-      "Wrap with Form.Item + Form.Label, or add aria-label directly to the input",
+    suggestion: "Wrap with Form.Item + Form.Label, or add aria-label directly to the input",
     pattern: /<(?:input|Input)\s(?![^>]*(?:aria-label|aria-labelledby|id=))[^>]*/,
     isIssue: (_match, _line, allLines, lineIndex) => {
       const context = allLines.slice(Math.max(0, lineIndex - 5), lineIndex + 5).join("\n");
@@ -109,11 +102,9 @@ const RULES: HeuristicRule[] = [
     id: "no-focus-visible",
     severity: "moderate",
     description: "Interactive element may be missing focus-visible styles",
-    suggestion:
-      "Ensure focus-visible:ring-2 focus-visible:ring-ring is present on all focusable elements",
+    suggestion: "Ensure focus-visible:ring-2 focus-visible:ring-ring is present on all focusable elements",
     pattern: /<(button|a|input|select|textarea|Input|Button|Link)[^>]*(?:className|class)=["'][^"']*["'][^>]*>/,
-    isIssue: (_match, line) =>
-      !/focus-visible/.test(line) && !/focus:ring/.test(line),
+    isIssue: (_match, line) => !/focus-visible/.test(line) && !/focus:ring/.test(line),
   },
 ];
 
@@ -128,9 +119,7 @@ async function auditFile(filePath: string): Promise<A11yIssue[]> {
       rule.pattern.lastIndex = 0;
       const match = rule.pattern.exec(line);
       if (!match) continue;
-      const isIssue = rule.isIssue
-        ? rule.isIssue(match, line, lines, i)
-        : true;
+      const isIssue = rule.isIssue ? rule.isIssue(match, line, lines, i) : true;
       if (!isIssue) continue;
       issues.push({
         file: filePath,
@@ -150,12 +139,7 @@ async function auditFile(filePath: string): Promise<A11yIssue[]> {
 const MAX_DEPTH = 10;
 const MAX_FILES = 500;
 
-async function collectFiles(
-  dir: string,
-  recursive: boolean,
-  depth = 0,
-  results: string[] = []
-): Promise<string[]> {
+async function collectFiles(dir: string, recursive: boolean, depth = 0, results: string[] = []): Promise<string[]> {
   if (depth > MAX_DEPTH || results.length >= MAX_FILES) return results;
   const entries = await readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
@@ -164,10 +148,7 @@ async function collectFiles(
     const full = join(dir, entry.name);
     if (entry.isDirectory() && recursive) {
       await collectFiles(full, recursive, depth + 1, results);
-    } else if (
-      entry.isFile() &&
-      (entry.name.endsWith(".tsx") || entry.name.endsWith(".ts"))
-    ) {
+    } else if (entry.isFile() && (entry.name.endsWith(".tsx") || entry.name.endsWith(".ts"))) {
       results.push(full);
     }
   }

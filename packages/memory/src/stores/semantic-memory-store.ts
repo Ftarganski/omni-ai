@@ -1,6 +1,6 @@
-import type { IMemoryStore, IProvider, SessionId, MemoryEntry, MemorySearchResult } from "@omni-ai/core";
-import { InMemoryStore } from "./in-memory.js";
+import type { IMemoryStore, IProvider, MemoryEntry, MemorySearchResult, SessionId } from "@omni-ai/core";
 import { cosineSimilarity } from "../vector.js";
+import { InMemoryStore } from "./in-memory.js";
 
 interface CachedEntry {
   content: string;

@@ -1,14 +1,12 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import type { IProvider, Message } from "../../core/src/types.js";
 import { ObservationMaskingCompactor } from "../src/compactors/observation-masking.js";
 import { SummaryCompactor } from "../src/compactors/summary.js";
-import type { IProvider, Message } from "../../core/src/types.js";
 
 function makeMessages(count: number): Message[] {
   return Array.from({ length: count }, (_, i) => ({
     role: (i % 2 === 0 ? "user" : "assistant") as "user" | "assistant",
-    content: i % 2 === 0 && i > 0
-      ? `[Tool read-file result]: ${"x".repeat(500)}`
-      : `message ${i}`,
+    content: i % 2 === 0 && i > 0 ? `[Tool read-file result]: ${"x".repeat(500)}` : `message ${i}`,
   }));
 }
 
@@ -26,7 +24,7 @@ describe("ObservationMaskingCompactor", () => {
       { role: "user", content: "[Tool read-file result]: very long content here" },
       { role: "assistant", content: "I read the file" },
       { role: "user", content: "[Tool write-file result]: written ok" }, // recent, should keep
-      { role: "assistant", content: "Done" },                            // recent, should keep
+      { role: "assistant", content: "Done" }, // recent, should keep
     ];
     const result = await compactor.compact(messages, provider);
     expect(result).toHaveLength(4);
@@ -64,8 +62,8 @@ describe("SummaryCompactor", () => {
     const messages: Message[] = [
       { role: "user", content: "create orders module" },
       { role: "assistant", content: "creating..." },
-      { role: "user", content: "add pagination" },  // recent
-      { role: "assistant", content: "done" },        // recent
+      { role: "user", content: "add pagination" }, // recent
+      { role: "assistant", content: "done" }, // recent
     ];
     const result = await compactor.compact(messages, provider);
     // First message should be the summary

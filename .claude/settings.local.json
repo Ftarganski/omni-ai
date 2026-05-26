@@ -41,7 +41,9 @@
       "Bash(Get-ChildItem -Path \"e:\\\\Desenvolvedor Full Stack\\\\Works\\\\omni-ai\\\\packages\\\\core\\\\src\\\\skills\" -ErrorAction SilentlyContinue)",
       "Bash(for dir *)",
       "Read(//e/Desenvolvedor Full Stack/Works/omni-ai/packages$dir/**)",
-      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"Path\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\", \"User\"\\); gh --version)"
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"Path\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\", \"User\"\\); gh --version)",
+      "Bash(Get-ChildItem -Path \"e:\\\\Desenvolvedor Full Stack\\\\Works\\\\omni-ai\" -Force)",
+      "Bash(Select-Object Name, Mode)"
     ],
     "additionalDirectories": [
       "C:\\Users\\conta\\.claude\\projects\\e--Desenvolvedor-Full-Stack-Works-omni-ai\\memory",

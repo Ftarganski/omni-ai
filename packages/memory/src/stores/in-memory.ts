@@ -1,4 +1,4 @@
-import type { IMemoryStore, SessionId, MemoryEntry, MemorySearchResult } from "@omni-ai/core";
+import type { IMemoryStore, MemoryEntry, MemorySearchResult, SessionId } from "@omni-ai/core";
 
 function sessionKey(session: SessionId): string {
   return `${session.resourceId}:${session.threadId}`;
@@ -23,9 +23,9 @@ export class InMemoryStore implements IMemoryStore {
     const entries = this.messages.get(sessionKey(session)) ?? [];
     const q = query.toLowerCase();
     return entries
-      .filter(e => e.content.toLowerCase().includes(q))
+      .filter((e) => e.content.toLowerCase().includes(q))
       .slice(-topK)
-      .map(e => ({ content: e.content, score: 1 }));
+      .map((e) => ({ content: e.content, score: 1 }));
   }
 
   async getWorkingMemory(session: SessionId): Promise<string | null> {

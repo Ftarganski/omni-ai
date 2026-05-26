@@ -1,15 +1,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
-import type {
-  Message,
-  ToolDefinition,
-  ToolCall,
-  CompletionRequest,
-  CompletionResponse,
-} from "@omni-ai/core";
+import type { CompletionRequest, CompletionResponse, Message, ToolCall, ToolDefinition } from "@omni-ai/core";
 
-export function toAnthropicMessages(
-  messages: Message[]
-): Anthropic.MessageParam[] {
+export function toAnthropicMessages(messages: Message[]): Anthropic.MessageParam[] {
   return messages
     .filter((m) => m.role !== "system")
     .map((m) => ({
@@ -18,9 +10,7 @@ export function toAnthropicMessages(
     }));
 }
 
-export function toAnthropicTools(
-  tools: ToolDefinition[]
-): Anthropic.Tool[] {
+export function toAnthropicTools(tools: ToolDefinition[]): Anthropic.Tool[] {
   return tools.map((t) => ({
     name: t.name,
     description: t.description,
@@ -28,17 +18,12 @@ export function toAnthropicTools(
   }));
 }
 
-export function extractSystemPrompt(
-  request: CompletionRequest
-): string | undefined {
+export function extractSystemPrompt(request: CompletionRequest): string | undefined {
   const systemMsg = request.messages.find((m) => m.role === "system");
   return request.systemPrompt ?? systemMsg?.content;
 }
 
-export function fromAnthropicResponse(
-  response: Anthropic.Message,
-  providerName: string
-): CompletionResponse {
+export function fromAnthropicResponse(response: Anthropic.Message, providerName: string): CompletionResponse {
   let content = "";
   const toolCalls: ToolCall[] = [];
 
