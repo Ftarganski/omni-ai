@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Message, ToolDefinition } from "../../core/src/types.js";
+import type { ContentPart, Message, ToolDefinition } from "../../core/src/types.js";
 import { fromOpenAIResponse, toOpenAIMessages, toOpenAITools } from "../src/mappers.js";
 
 describe("toOpenAIMessages", () => {
@@ -12,6 +12,48 @@ describe("toOpenAIMessages", () => {
     const result = toOpenAIMessages(messages);
     expect(result).toHaveLength(3);
     expect(result[0]).toEqual({ role: "system", content: "You are helpful" });
+  });
+
+  it("maps user message with ContentPart[] including image", () => {
+    const messages: Message[] = [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: "Look at this" },
+          { type: "image", mimeType: "image/png", data: "abc123" },
+        ] as ContentPart[],
+      },
+    ];
+    const result = toOpenAIMessages(messages);
+    expect(result[0]).toEqual({
+      role: "user",
+      content: [
+        { type: "text", text: "Look at this" },
+        { type: "image_url", image_url: { url: "data:image/png;base64,abc123" } },
+      ],
+    });
+  });
+
+  it("extracts text from ContentPart[] in system message", () => {
+    const messages: Message[] = [
+      {
+        role: "system",
+        content: [{ type: "text", text: "Be concise" }] as ContentPart[],
+      },
+    ];
+    const result = toOpenAIMessages(messages);
+    expect(result[0]).toEqual({ role: "system", content: "Be concise" });
+  });
+
+  it("extracts text from ContentPart[] in assistant message", () => {
+    const messages: Message[] = [
+      {
+        role: "assistant",
+        content: [{ type: "text", text: "I can help" }] as ContentPart[],
+      },
+    ];
+    const result = toOpenAIMessages(messages);
+    expect(result[0]).toEqual({ role: "assistant", content: "I can help" });
   });
 });
 

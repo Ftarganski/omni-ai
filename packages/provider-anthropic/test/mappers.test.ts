@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CompletionRequest, Message, ToolDefinition } from "../../core/src/types.js";
+import type { CompletionRequest, ContentPart, Message, ToolDefinition } from "../../core/src/types.js";
 import { extractSystemPrompt, fromAnthropicResponse, toAnthropicMessages, toAnthropicTools } from "../src/mappers.js";
 
 describe("toAnthropicMessages", () => {
@@ -22,6 +22,23 @@ describe("toAnthropicMessages", () => {
     const result = toAnthropicMessages(messages);
     expect(result).toHaveLength(1);
     expect(result[0].role).toBe("user");
+  });
+
+  it("maps user message with ContentPart[] including image", () => {
+    const messages: Message[] = [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: "Look at this" },
+          { type: "image", mimeType: "image/png", data: "abc123" },
+        ] as ContentPart[],
+      },
+    ];
+    const result = toAnthropicMessages(messages);
+    expect(result[0].content).toEqual([
+      { type: "text", text: "Look at this" },
+      { type: "image", source: { type: "base64", media_type: "image/png", data: "abc123" } },
+    ]);
   });
 });
 
@@ -64,6 +81,26 @@ describe("extractSystemPrompt", () => {
       systemPrompt: "Override",
     } as unknown as CompletionRequest;
     expect(extractSystemPrompt(req)).toBe("Override");
+  });
+
+  it("returns undefined when no system prompt is present", () => {
+    const req = { messages: [{ role: "user", content: "hi" }] } as unknown as CompletionRequest;
+    expect(extractSystemPrompt(req)).toBeUndefined();
+  });
+
+  it("extracts text from ContentPart[] system message", () => {
+    const req = {
+      messages: [
+        {
+          role: "system",
+          content: [
+            { type: "text", text: "You are helpful" },
+            { type: "image", mimeType: "image/png", data: "x" },
+          ] as ContentPart[],
+        },
+      ],
+    } as unknown as CompletionRequest;
+    expect(extractSystemPrompt(req)).toBe("You are helpful");
   });
 });
 
