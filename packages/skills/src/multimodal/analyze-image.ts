@@ -83,10 +83,7 @@ export const analyzeImageSkill: ISkill<AnalyzeImageInput, AnalyzeImageOutput> = 
       messages: [
         {
           role: "user",
-          content: [
-            imagePart,
-            { type: "text", text: parsed.prompt },
-          ],
+          content: [imagePart, { type: "text", text: parsed.prompt }],
         },
       ],
       temperature: 0.2,

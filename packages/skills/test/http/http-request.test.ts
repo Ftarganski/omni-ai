@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { httpRequestSkill } from "../src/http-request.js";
+import { httpRequestSkill } from "../../src/http/http-request.js";
 
 function mockFetch(status: number, body: string, headers: Record<string, string> = {}): void {
   const responseHeaders = new Headers({ "content-type": "application/json", ...headers });

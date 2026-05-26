@@ -2,7 +2,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { gitLogSkill } from "../src/git-log.js";
+import { gitLogSkill } from "../../src/git/git-log.js";
 
 let repoDir: string;
 

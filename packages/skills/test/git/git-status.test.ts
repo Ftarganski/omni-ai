@@ -1,8 +1,8 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { gitStatusSkill } from "../src/git-status.js";
+import { gitStatusSkill } from "../../src/git/git-status.js";
 
 let repoDir: string;
 

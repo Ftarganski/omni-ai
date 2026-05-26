@@ -1,8 +1,11 @@
 import { writeFile } from "node:fs/promises";
 import { createRuntime } from "@omni-ai/core";
-import { searchCodeSkill } from "@omni-ai/skills-code";
-import { listDirectorySkill, readFileSkill, writeFileSkill } from "@omni-ai/skills-fs";
-import { auditAccessibilitySkill } from "@omni-ai/skills-ux";
+import { searchCodeSkill } from "@omni-ai/skills/code";
+import { listDirectorySkill, readFileSkill, writeFileSkill } from "@omni-ai/skills/fs";
+import { gitCommitMessageSkill, gitDiffSkill, gitLogSkill, gitStatusSkill } from "@omni-ai/skills/git";
+import { httpRequestSkill } from "@omni-ai/skills/http";
+import { analyzeImageSkill } from "@omni-ai/skills/multimodal";
+import { auditAccessibilitySkill } from "@omni-ai/skills/ux";
 import chalk from "chalk";
 import { resolveConfigPath } from "../utils/config-path.js";
 import { agentHeader, errorLine, iterationLine, savedLine, tokenSummary } from "../utils/format.js";
@@ -25,7 +28,19 @@ export async function chainCommand(prompt: string, agents: string[], opts: Chain
 
   const configPath = opts.config ?? resolveConfigPath();
 
-  const skills = [readFileSkill, writeFileSkill, listDirectorySkill, searchCodeSkill, auditAccessibilitySkill];
+  const skills = [
+    readFileSkill,
+    writeFileSkill,
+    listDirectorySkill,
+    searchCodeSkill,
+    auditAccessibilitySkill,
+    gitStatusSkill,
+    gitDiffSkill,
+    gitLogSkill,
+    gitCommitMessageSkill,
+    httpRequestSkill,
+    analyzeImageSkill,
+  ];
 
   const runtime = await createRuntime({ configPath, skills }).catch((err: unknown) => {
     console.error(errorLine(`Failed to load config: ${err instanceof Error ? err.message : String(err)}`));

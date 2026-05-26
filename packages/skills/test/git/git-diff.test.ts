@@ -2,7 +2,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { gitDiffSkill } from "../src/git-diff.js";
+import { gitDiffSkill } from "../../src/git/git-diff.js";
 
 let repoDir: string;
 

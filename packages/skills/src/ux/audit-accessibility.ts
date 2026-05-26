@@ -28,7 +28,6 @@ interface HeuristicRule {
   description: string;
   suggestion: string;
   pattern: RegExp;
-  /** Return true when the match IS an issue (some patterns need negative lookahead logic) */
   isIssue?: (match: RegExpExecArray, line: string, allLines: string[], lineIndex: number) => boolean;
 }
 
