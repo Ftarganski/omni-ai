@@ -10,7 +10,8 @@
   "scripts": {
     "build": "tsc && node -e \"import('fs').then(fs => fs.chmodSync('dist/bin.js', 0o755))\"",
     "dev": "tsc --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@omni-ai/core": "workspace:*",

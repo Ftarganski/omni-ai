@@ -23,7 +23,7 @@ export const AgentConfigSchema = z.object({
 
 export const OmniAiConfigSchema = z.object({
   version: z.string().default("1"),
-  providers: z.array(ProviderConfigSchema),
+  providers: z.array(ProviderConfigSchema).min(1, "At least one provider must be configured"),
   defaultProvider: z.string(),
   agentsDir: z.string().default("agents"),
   agents: z.array(AgentConfigSchema).optional(),

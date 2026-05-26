@@ -968,7 +968,7 @@ pnpm build && omni list agents
 - [x] Encadeamento de agentes — output de um agente como input de outro (`omni chain`)
 - [x] `omni init` — wizard interativo para configuração inicial
 - [x] Suporte a embeddings — `IProvider.embed()` com vetores de contexto (`SemanticMemoryStore`, `VectorIndex`)
-- [ ] Testes automatizados por pacote
+- [x] Testes automatizados por pacote — 63 testes, 8 pacotes (vitest)
 
 ---
 

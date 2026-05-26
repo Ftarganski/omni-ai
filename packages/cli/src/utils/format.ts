@@ -12,7 +12,7 @@ export function stepLine(skillName: string, detail?: string): string {
 export function tokenSummary(inputTokens: number, outputTokens: number): string {
   const cost = ((inputTokens * 3 + outputTokens * 15) / 1_000_000).toFixed(4);
   return chalk.gray(
-    `Tokens: ${inputTokens.toLocaleString()} entrada · ${outputTokens.toLocaleString()} saída · ~$${cost}`
+    `Tokens: ${inputTokens.toLocaleString("en-US")} entrada · ${outputTokens.toLocaleString("en-US")} saída · ~$${cost}`
   );
 }
 
