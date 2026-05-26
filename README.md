@@ -157,6 +157,59 @@ omni list providers   # Lista os providers registrados e seus tipos
 
 ---
 
+### `omni chain`
+
+Executa uma sequência de agentes em pipeline: a saída de cada agente se torna a entrada do próximo.
+
+```
+omni chain "<prompt>" <agent1> <agent2> [agent3...]
+```
+
+| Opção | Tipo | Descrição |
+|-------|------|-----------|
+| `--config <path>` | string | Caminho para o `omni-ai.yaml` |
+| `--output <file>` | string | Salva o output final em arquivo |
+| `--verbose` | flag | Imprime o output de cada agente intermediário |
+
+**Exemplos:**
+
+```bash
+# Schema → implementação → validação
+omni chain "crie módulo de orders" backend-schema backend-dev qa-backend
+
+# Geração de componente + auditoria UX
+omni chain "crie a página de listagem de pedidos" frontend-dev ux-reviewer
+
+# Com output salvo
+omni chain "crie o módulo de customers" backend-schema backend-dev qa-backend --output customers.md
+
+# Verbose — mostra output intermediário de cada agente
+omni chain "crie módulo de invoices" backend-schema backend-dev --verbose
+```
+
+**Output visual:**
+
+```
+◆ backend-schema  [anthropic / claude-sonnet-4-6]
+  ... (3 iterações)
+
+  ↓  saída passada para: backend-dev
+
+◆ backend-dev  [anthropic / claude-sonnet-4-6]
+  ... (8 iterações)
+
+  ↓  saída passada para: qa-backend
+
+◆ qa-backend  [anthropic / claude-sonnet-4-6]
+  ... (4 iterações)
+
+<output final do qa-backend>
+
+Tokens: 18.400 entrada · 5.200 saída · ~$0.084
+```
+
+---
+
 ### `omni init`
 
 Wizard interativo que gera `config/omni-ai.yaml` e atualiza o `.env` sem editar arquivos manualmente.
@@ -863,7 +916,7 @@ pnpm build && omni list agents
 - [x] Herança de provider/modelo — agentes herdam do config, podem sobrescrever
 - [x] Agentes inline — definição direta no `omni-ai.yaml` sem arquivo YAML separado
 - [ ] Streaming de tokens em tempo real (`omni run ... --stream`)
-- [ ] Encadeamento de agentes — output de um agente como input de outro
+- [x] Encadeamento de agentes — output de um agente como input de outro (`omni chain`)
 - [x] `omni init` — wizard interativo para configuração inicial
 - [ ] Suporte a embeddings — `IProvider.embed()` com vetores de contexto
 - [ ] Testes automatizados por pacote

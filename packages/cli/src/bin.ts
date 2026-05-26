@@ -7,6 +7,7 @@ import { Command } from "commander";
 import { runCommand } from "./commands/run.js";
 import { listCommand } from "./commands/list.js";
 import { initCommand } from "./commands/init.js";
+import { chainCommand } from "./commands/chain.js";
 
 // Load .env from the omni-ai repo root (4 levels up from packages/cli/dist/)
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -33,6 +34,14 @@ program
   .command("init")
   .description("Interactive setup wizard — creates omni-ai.yaml and configures .env")
   .action(initCommand);
+
+program
+  .command("chain <prompt> <agents...>")
+  .description("Run a sequence of agents, piping each output as the next agent's input")
+  .option("-c, --config <path>", "Path to omni-ai.yaml")
+  .option("-o, --output <file>", "Save final output to file")
+  .option("-v, --verbose", "Print each agent's full output as the chain progresses")
+  .action(chainCommand);
 
 const list = program.command("list").description("List available resources");
 
