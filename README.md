@@ -1,322 +1,167 @@
 # omni-ai
 
-**Provider-agnostic AI agents and skills framework for TypeScript monorepos.**  
-Configure any LLM provider (Anthropic, OpenAI, GitHub Copilot, or self-hosted) and compose reusable agents for your projects — backend generation, frontend components, UX review, QA validation, and more.
+**Framework provider-agnostic de AI agents e skills para monorepos TypeScript.**
 
-```
-pnpm add @omni-ai/core
-```
+Configure qualquer provider LLM (Anthropic, OpenAI, GitHub Copilot, ou self-hosted) e compose agentes reutilizáveis para seus projetos — geração de backend, componentes frontend, revisão UX, validação QA, e mais — tudo via CLI ou API programática.
 
 ---
 
-## How it works
+## Como funciona
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        omni-ai.yaml                                 │
-│                                                                     │
-│  defaultProvider: anthropic                                         │
-│                                                                     │
-│  providers:                    agents:                              │
-│  ┌──────────────────────┐      ┌────────────────────────────────┐   │
-│  │ name: anthropic      │      │ name: backend-dev              │   │
-│  │ type: anthropic      │      │ systemPrompt: "..."            │   │
-│  │ apiKey: ${API_KEY}   │      │ skills: [read-file, write-file]│   │
-│  │ defaultModel: claude │      │ maxIterations: 30              │   │
-│  └──────────────────────┘      └────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────┘
-                │                               │
-                ▼                               ▼
-┌──────────────────────────┐    ┌───────────────────────────────────┐
-│     ProviderRegistry     │    │          Agent (agentic loop)     │
-│                          │    │                                   │
-│  IProvider               │◄───│  1. Send systemPrompt + input     │
-│  ┌──────────────────┐    │    │  2. Receive tool calls            │
-│  │ complete()       │    │    │  3. Execute skills                │
-│  │ embed()          │    │    │  4. Feed results back             │
-│  │ stream()         │    │    │  5. Repeat until done / maxIter   │
-│  └──────────────────┘    │    └───────────────────────────────────┘
-└──────────────────────────┘                   │
-         │                                     │
-         ▼                                     ▼
-  ┌─────────────┐                    ┌──────────────────┐
-  │  Anthropic  │                    │     Skills       │
-  │  OpenAI     │                    │  read-file       │
-  │  Copilot    │                    │  write-file      │
-  │  Custom     │                    │  search-code     │
-  └─────────────┘                    │  list-directory  │
-                                     │  audit-a11y      │
-                                     └──────────────────┘
+cd meu-projeto
+omni run backend-dev "crie o módulo de pedidos com CRUD e GraphQL"
+         │
+         ▼
+    CLI (omni)
+     │  lê config/omni-ai.yaml    ← provider, modelo e agentsDir
+     │  resolve "backend-dev"     ← busca agents/**/*.yaml por name:
+     │  instancia o provider      ← AnthropicProvider / OpenAIProvider
+     │  monta o SkillRegistry     ← read-file, write-file, search-code...
+     │  cria o Agent → agent.run()
+     │
+     └─ Loop agentico:
+          1. Envia systemPrompt + input para o LLM
+          2. LLM retorna texto ou tool calls
+          3. Skills são executadas (lê/escreve arquivos no meu-projeto/)
+          4. Resultados voltam para o LLM
+          5. Repete até concluir ou atingir maxIterations
 ```
+
+As skills (`read-file`, `write-file`, `search-code`, etc.) operam sempre no **diretório onde você executou o comando** (`process.cwd()`). O config e os agents ficam no repositório `omni-ai`.
 
 ---
 
-## Core concepts
+## Instalação
 
-| Concept | Description |
-|---------|-------------|
-| **Provider** | Adapter for an AI API. Implements `IProvider` with `complete()`, optional `embed()` and `stream()`. Configured in `omni-ai.yaml`. |
-| **Skill** | A reusable capability an agent can call as a tool (read a file, search code, write output, etc.). Implements `ISkill<TInput, TOutput>`. |
-| **Agent** | Combines a `systemPrompt` + `skills` list + iteration budget. Defined as YAML. Inherits `provider` and `model` from config defaults. |
-| **Config** | Central `omni-ai.yaml` that declares available providers and the default one. Agents inherit from it unless they override. |
+### Pré-requisitos
 
-### Provider & model inheritance
+| Ferramenta | Versão mínima |
+|------------|---------------|
+| Node.js    | 20.x          |
+| pnpm       | 9.x           |
 
-```
-omni-ai.yaml
-  └─ defaultProvider: anthropic        ← applies to all agents
-       └─ providers[anthropic]
-            └─ defaultModel: claude-sonnet-4-6   ← applies to all agents
-
-agent.yaml
-  ├─ provider: (omitted)  →  uses defaultProvider
-  ├─ provider: openai     →  overrides for this agent only
-  ├─ model: (omitted)     →  uses defaultModel of resolved provider
-  └─ model: gpt-4o-mini   →  overrides for this agent only
-```
-
----
-
-## Repository structure
-
-```
-omni-ai/
-│
-├── packages/                      # npm packages (pnpm workspaces)
-│   ├── core/                      # @omni-ai/core — interfaces, registry, config schema
-│   │   └── src/
-│   │       ├── types.ts           # IProvider, ISkill, IAgent, IMemoryStore, ICompactor...
-│   │       ├── config/schema.ts   # Zod schemas for omni-ai.yaml validation
-│   │       ├── agents/agent.ts    # Base Agent implementation (agentic loop + memory)
-│   │       ├── providers/         # ProviderRegistry
-│   │       └── skills/            # SkillRegistry
-│   │
-│   ├── memory/                    # @omni-ai/memory — session memory & compaction
-│   │   └── src/
-│   │       ├── stores/
-│   │       │   ├── in-memory.ts   # InMemoryStore (default, no persistence)
-│   │       │   └── sqlite.ts      # SQLiteMemoryStore (local file, FTS5 search)
-│   │       └── compactors/
-│   │           ├── observation-masking.ts  # Mask old tool results (zero LLM cost)
-│   │           └── summary.ts             # LLM-based history summarization
-│   │
-│   ├── skills-fs/                 # @omni-ai/skills-fs — filesystem skills
-│   │   └── src/
-│   │       ├── read-file.ts       # Read any file by path
-│   │       ├── write-file.ts      # Write/overwrite a file
-│   │       └── list-directory.ts  # List directory contents
-│   │
-│   ├── skills-code/               # @omni-ai/skills-code — code analysis skills
-│   │   └── src/
-│   │       └── search-code.ts     # Grep/ripgrep-based code search
-│   │
-│   └── skills-ux/                 # @omni-ai/skills-ux — UX audit skills
-│       └── src/
-│           └── audit-accessibility.ts  # Heuristic a11y scan of TSX files
-│
-├── agents/                        # Agent YAML definitions (23 agents)
-│   ├── _template/agent.yaml       # Starter template for new agents
-│   ├── backend/                   # NestJS/TypeScript backend agents (7)
-│   ├── frontend/                  # React/TypeScript frontend agents (5)
-│   ├── ux/                        # UX implementation agents (5)
-│   └── qa/                        # QA validation agents (4)
-│
-├── providers/                     # Provider setup guides
-│   ├── anthropic/README.md
-│   ├── openai/README.md
-│   └── copilot/README.md
-│
-├── skills/                        # Custom skill templates
-│   └── _template/skill.ts
-│
-├── config/
-│   └── omni-ai.example.yaml       # Configuration template (copy → omni-ai.yaml)
-│
-├── .env.example                   # Environment variable template
-└── templates/                     # Additional scaffolding templates
-```
-
----
-
-## Quick start
-
-### 1. Clone and install
+### 1. Clonar e instalar
 
 ```bash
 git clone https://github.com/Ftarganski/omni-ai.git
 cd omni-ai
 pnpm install
-```
-
-### 2. Create your config
-
-```bash
-cp config/omni-ai.example.yaml config/omni-ai.yaml
-```
-
-Edit `config/omni-ai.yaml` and set your `defaultProvider` and the providers you want to use.
-
-### 3. Set your API keys
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and fill in the keys for the providers you configured.
-
-### 4. Build
-
-```bash
 pnpm build
 ```
 
-### 5. Use the core in your project
+### 2. Configurar o provider
 
-```typescript
-import { Agent, ProviderRegistry } from "@omni-ai/core";
+```bash
+cp config/omni-ai.example.yaml config/omni-ai.yaml
+cp .env.example .env
+```
 
-const registry = new ProviderRegistry();
-registry.register(new AnthropicProvider({ apiKey: process.env.ANTHROPIC_API_KEY }));
+Edite `config/omni-ai.yaml` e `.env` de acordo com o provider escolhido. Veja a seção [Providers](#providers) abaixo.
 
-const agent = new Agent(agentConfig, registry, skillRegistry);
-const result = await agent.run({ input: "Review this PR for security issues." });
-console.log(result.output);
+### 3. Disponibilizar o CLI globalmente
+
+```bash
+# Uma vez — registra o comando `omni` no sistema
+pnpm --filter @omni-ai/cli link --global
+```
+
+Depois disso, `omni` funciona de qualquer diretório.
+
+### 4. Testar a instalação
+
+```bash
+# A partir do próprio omni-ai (ou de qualquer projeto)
+omni list agents
+omni list providers
+omni list skills
 ```
 
 ---
 
-## Configuration reference
+## Uso rápido
 
-### `omni-ai.yaml` structure
+```bash
+# Entrar no projeto alvo
+cd /path/para/meu-projeto
 
-```yaml
-version: "1"
+# Rodar um agente
+omni run backend-dev "crie o módulo de pedidos"
 
-# All agents use this provider unless they declare their own
-defaultProvider: anthropic
+# Com sessão de memória (persiste entre runs)
+omni run backend-dev "continue o módulo de pedidos" --session user1:feature1
 
-providers:
-  - name: anthropic
-    type: anthropic                      # "anthropic" | "openai" | "copilot" | "custom"
-    apiKey: ${ANTHROPIC_API_KEY}         # env var reference — never hardcode keys
-    defaultModel: claude-sonnet-4-6      # model used when agents don't specify one
+# Modo verbose — mostra iterações e tokens por step
+omni run qa-backend "valide src/orders/orders.service.ts" --verbose
 
-  - name: openai
-    type: openai
-    apiKey: ${OPENAI_API_KEY}
-    defaultModel: gpt-4o
-
-  - name: copilot
-    type: copilot
-    apiKey: ${GITHUB_TOKEN}
-    baseUrl: https://api.githubcopilot.com
-    defaultModel: gpt-4o
-
-agents:
-  # Minimal — inherits provider and model from defaults above
-  - name: code-reviewer
-    description: Reviews code for quality, bugs, and security issues
-    systemPrompt: |
-      You are an expert code reviewer...
-    skills:
-      - read-file
-      - search-code
-    maxIterations: 5
-
-  # With explicit override — uses a different provider/model than the default
-  - name: doc-writer
-    description: Generates documentation
-    provider: openai          # overrides defaultProvider for this agent only
-    model: gpt-4o-mini        # overrides defaultModel for this agent only
-    systemPrompt: |
-      You are a technical writer...
-    maxIterations: 3
+# Salvar output em arquivo
+omni run backend-dev "crie módulo de notificações" --output implementacao.md
 ```
 
-### Agent YAML fields
+---
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `name` | `string` | required | Unique identifier |
-| `description` | `string` | required | What the agent does |
-| `provider` | `string` | inherits | Provider name — omit to use `defaultProvider` |
-| `model` | `string` | inherits | Model ID — omit to use `defaultModel` |
-| `systemPrompt` | `string` | required | The agent's instructions |
-| `skills` | `string[]` | `[]` | Skill names the agent can call as tools |
-| `maxIterations` | `number` | `10` | Maximum agentic loop iterations |
-| `temperature` | `number` | provider default | Sampling temperature (0–2) |
+## CLI — Referência completa
+
+### `omni run`
+
+```
+omni run <agent> "<prompt>" [opções]
+```
+
+| Opção | Tipo | Descrição |
+|-------|------|-----------|
+| `--config <path>` | string | Caminho para o `omni-ai.yaml` (padrão: detectado automaticamente) |
+| `--session <id>` | string | ID de sessão no formato `"resourceId:threadId"` — habilita memória SQLite entre runs |
+| `--output <file>` | string | Salva o output completo em um arquivo |
+| `--verbose` | flag | Exibe cada iteração, tool calls e contagem de tokens por step |
+
+**Exemplos:**
+
+```bash
+# Backend — gera módulo completo
+omni run backend-dev "crie o módulo de customers com CRUD, GraphQL e listeners"
+
+# Frontend — gera componente
+omni run frontend-dev "crie a página de listagem de pedidos com filtros e paginação"
+
+# UX — audita e corrige problemas
+omni run ux-lead "audite o componente OrderForm"
+
+# QA — valida código gerado
+omni run qa-lead "valide todos os arquivos em src/orders/"
+
+# Com memória entre sessões
+omni run backend-dev "o que você implementou no módulo de customers?" --session dev1:customers
+
+# Agente específico + output em arquivo
+omni run backend-schema "crie o schema para a entidade Invoice" --output invoice-schema.md
+```
+
+---
+
+### `omni list`
+
+```bash
+omni list agents      # Lista todos os agentes disponíveis (nome + descrição)
+omni list skills      # Lista todas as skills registradas
+omni list providers   # Lista os providers registrados e seus tipos
+```
 
 ---
 
 ## Providers
 
-### Anthropic (Claude)
+### GitHub Copilot (recomendado para usuários GitHub)
 
-```yaml
-# config/omni-ai.yaml
-providers:
-  - name: anthropic
-    type: anthropic
-    apiKey: ${ANTHROPIC_API_KEY}
-    defaultModel: claude-sonnet-4-6
-```
+Não requer conta separada — usa o seu token GitHub existente.
 
 ```bash
-# .env
-ANTHROPIC_API_KEY=sk-ant-api03-...
-```
+# 1. Autenticar com GitHub CLI (se ainda não fez)
+gh auth login
 
-**Available models** (as of 2025):
-
-| Model | ID | Best for |
-|-------|----|----------|
-| Claude Opus 4.7 | `claude-opus-4-7` | Complex reasoning, long context |
-| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Balanced quality/speed (recommended) |
-| Claude Haiku 4.5 | `claude-haiku-4-5-20251001` | Fast, low-cost tasks |
-
-Get your key: [console.anthropic.com](https://console.anthropic.com) → API Keys
-
----
-
-### OpenAI (GPT)
-
-```yaml
-# config/omni-ai.yaml
-providers:
-  - name: openai
-    type: openai
-    apiKey: ${OPENAI_API_KEY}
-    defaultModel: gpt-4o
-```
-
-```bash
-# .env
-OPENAI_API_KEY=sk-proj-...
-```
-
-**Available models** (as of 2025):
-
-| Model | ID | Best for |
-|-------|----|----------|
-| GPT-4o | `gpt-4o` | Multimodal, strong reasoning |
-| GPT-4o mini | `gpt-4o-mini` | Fast, cost-efficient |
-| o1 | `o1` | Advanced reasoning tasks |
-| o3-mini | `o3-mini` | Fast reasoning |
-
-Get your key: [platform.openai.com](https://platform.openai.com) → API keys
-
----
-
-### GitHub Copilot
-
-```yaml
-# config/omni-ai.yaml
-providers:
-  - name: copilot
-    type: copilot
-    apiKey: ${GITHUB_TOKEN}
-    baseUrl: https://api.githubcopilot.com
-    defaultModel: gpt-4o
+# 2. Obter o token
+gh auth token
+# Copia o valor e cola no .env abaixo
 ```
 
 ```bash
@@ -324,286 +169,584 @@ providers:
 GITHUB_TOKEN=ghp_...
 ```
 
-Get your token: [github.com/settings/tokens](https://github.com/settings/tokens) → Generate new token (classic). No special scopes required for Copilot API access.
+```yaml
+# config/omni-ai.yaml
+defaultProvider: copilot
+
+providers:
+  - name: copilot
+    type: copilot
+    apiKey: ${GITHUB_TOKEN}
+    baseUrl: https://api.githubcopilot.com
+    defaultModel: gpt-4o
+```
+
+> **Nota:** Requer uma assinatura ativa do GitHub Copilot (Individual, Business ou Enterprise).
+
+---
+
+### Anthropic (Claude)
+
+```bash
+# .env
+ANTHROPIC_API_KEY=sk-ant-api03-...
+```
+
+```yaml
+# config/omni-ai.yaml
+defaultProvider: anthropic
+
+providers:
+  - name: anthropic
+    type: anthropic
+    apiKey: ${ANTHROPIC_API_KEY}
+    defaultModel: claude-sonnet-4-6
+```
+
+Como obter: [console.anthropic.com](https://console.anthropic.com) → API Keys → Create key
+
+**Modelos disponíveis:**
+
+| Modelo | ID | Uso recomendado |
+|--------|----|-----------------|
+| Claude Opus 4.7 | `claude-opus-4-7` | Raciocínio complexo, contexto longo |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Qualidade/velocidade balanceados ✓ |
+| Claude Haiku 4.5 | `claude-haiku-4-5-20251001` | Tarefas rápidas e de baixo custo |
+
+> **Atenção:** A API Anthropic requer `temperature <= 1.0`. O adapter valida isso automaticamente.
+
+---
+
+### OpenAI (GPT)
+
+```bash
+# .env
+OPENAI_API_KEY=sk-proj-...
+```
+
+```yaml
+# config/omni-ai.yaml
+defaultProvider: openai
+
+providers:
+  - name: openai
+    type: openai
+    apiKey: ${OPENAI_API_KEY}
+    defaultModel: gpt-4o
+```
+
+Como obter: [platform.openai.com](https://platform.openai.com) → API keys
+
+**Modelos disponíveis:**
+
+| Modelo | ID | Uso recomendado |
+|--------|----|-----------------|
+| GPT-4o | `gpt-4o` | Multimodal, raciocínio forte |
+| GPT-4o mini | `gpt-4o-mini` | Rápido, custo eficiente |
+| o1 | `o1` | Raciocínio avançado |
+| o3-mini | `o3-mini` | Raciocínio rápido |
 
 ---
 
 ### Custom / self-hosted (Ollama, Groq, Azure, vLLM...)
 
-Any endpoint that implements the OpenAI chat completions format works with `type: custom`:
-
-```yaml
-providers:
-  - name: ollama
-    type: custom
-    baseUrl: ${CUSTOM_LLM_BASE_URL}     # e.g. http://localhost:11434/v1
-    apiKey: ${CUSTOM_LLM_API_KEY}       # leave empty for Ollama
-    defaultModel: llama3.2
-```
+Qualquer endpoint compatível com a API OpenAI de chat completions:
 
 ```bash
 # .env
-CUSTOM_LLM_BASE_URL=http://localhost:11434/v1
-CUSTOM_LLM_API_KEY=
+CUSTOM_LLM_BASE_URL=http://localhost:11434/v1   # Ollama
+CUSTOM_LLM_API_KEY=                              # Vazio para Ollama
 ```
 
-Compatible endpoints: **Ollama**, **LM Studio**, **vLLM**, **Groq**, **Together AI**, **Azure OpenAI**, **Mistral AI**, **Perplexity**.
+```yaml
+# config/omni-ai.yaml
+providers:
+  - name: ollama
+    type: custom
+    baseUrl: ${CUSTOM_LLM_BASE_URL}
+    apiKey: ${CUSTOM_LLM_API_KEY}
+    defaultModel: llama3.2
+```
+
+Endpoints compatíveis: **Ollama**, **LM Studio**, **vLLM**, **Groq**, **Together AI**, **Azure OpenAI**, **Mistral AI**, **Perplexity**.
 
 ---
 
-## Agent catalog
+### Múltiplos providers
 
-### Backend agents
+Você pode declarar vários providers e cada agente pode usar um diferente:
 
-| Agent | File | What it does |
-|-------|------|--------------|
-| `backend-dev` | `agents/backend/backend-dev.yaml` | Orchestrator — full NestJS feature from schema to tests |
-| `backend-service` | `agents/backend/backend-service.yaml` | NestJS service with CRUD, events, error helpers |
-| `backend-resolver` | `agents/backend/backend-resolver.yaml` | GraphQL resolver with federation patterns |
-| `backend-schema` | `agents/backend/backend-schema.yaml` | DynamoDB entity schema with `defineSchema()` |
-| `backend-listener` | `agents/backend/backend-listener.yaml` | Domain event listeners with `@OnEventCatcher` |
-| `backend-test` | `agents/backend/backend-test.yaml` | Jest integration tests with real local DynamoDB |
-| `backend-atom-app` | `agents/backend/backend-atom-app.yaml` | Atom framework connectors (sessions, ARNs, message routing) |
+```yaml
+defaultProvider: copilot
 
-### Frontend agents
+providers:
+  - name: copilot
+    type: copilot
+    apiKey: ${GITHUB_TOKEN}
+    defaultModel: gpt-4o
 
-| Agent | File | What it does |
-|-------|------|--------------|
-| `frontend-dev` | `agents/frontend/frontend-dev.yaml` | Orchestrator — full React feature from route to components |
-| `frontend-ui-component` | `agents/frontend/frontend-ui-component.yaml` | shadcn/ui-based primitive UI components |
-| `frontend-module-component` | `agents/frontend/frontend-module-component.yaml` | Data-connected module components (TanStack Query) |
-| `frontend-page-route` | `agents/frontend/frontend-page-route.yaml` | TanStack Router pages with layouts |
-| `frontend-custom-hook` | `agents/frontend/frontend-custom-hook.yaml` | Custom React hooks (typed, SSR-safe) |
+  - name: anthropic
+    type: anthropic
+    apiKey: ${ANTHROPIC_API_KEY}
+    defaultModel: claude-sonnet-4-6
 
-### UX agents
+  - name: ollama
+    type: custom
+    baseUrl: http://localhost:11434/v1
+    defaultModel: llama3.2
+```
 
-| Agent | File | What it does |
-|-------|------|--------------|
-| `ux-lead` | `agents/ux/ux-lead.yaml` | Orchestrator — full UX audit across 10 dimensions |
-| `ux-reviewer` | `agents/ux/ux-reviewer.yaml` | Detailed UX review with severity-ranked findings |
-| `ux-states` | `agents/ux/ux-states.yaml` | Loading / empty / error / success state components |
-| `ux-forms` | `agents/ux/ux-forms.yaml` | Form UX — validation, autocomplete, accessibility |
-| `ux-motion` | `agents/ux/ux-motion.yaml` | Animations with `motion-safe:`, timing, easing |
-
-### QA agents
-
-| Agent | File | What it does |
-|-------|------|--------------|
-| `qa-lead` | `agents/qa/qa-lead.yaml` | Orchestrator — routes files to the right QA agents, issues merge verdict |
-| `qa-frontend` | `agents/qa/qa-frontend.yaml` | Validates React/TypeScript code (imports, Tailwind tokens, a11y) |
-| `qa-ux` | `agents/qa/qa-ux.yaml` | Validates UX implementation (feedback, forms, states, motion) |
-| `qa-backend` | `agents/qa/qa-backend.yaml` | Validates NestJS code (services, resolvers, schema, tests) |
+No arquivo YAML do agente, basta declarar `provider: anthropic` para sobrescrever o padrão apenas para aquele agente.
 
 ---
 
-## Available skills
+## Configuração — referência completa
 
-| Skill | Package | Description |
-|-------|---------|-------------|
-| `read-file` | `@omni-ai/skills-fs` | Read any file by absolute path |
-| `write-file` | `@omni-ai/skills-fs` | Write or overwrite a file |
-| `list-directory` | `@omni-ai/skills-fs` | List files and subdirectories |
-| `search-code` | `@omni-ai/skills-code` | Search codebase with regex (ripgrep) |
-| `audit-accessibility` | `@omni-ai/skills-ux` | Heuristic a11y scan of TSX component files |
+### `omni-ai.yaml`
+
+```yaml
+version: "1"
+
+# Provider padrão para todos os agentes (a menos que o agente sobrescreva)
+defaultProvider: copilot
+
+# Diretório dos YAML de agentes (relativo à raiz do omni-ai)
+agentsDir: agents
+
+providers:
+  - name: copilot
+    type: copilot            # "anthropic" | "openai" | "copilot" | "custom"
+    apiKey: ${GITHUB_TOKEN}  # referência a variável de ambiente — nunca hardcode
+    baseUrl: https://api.githubcopilot.com
+    defaultModel: gpt-4o     # modelo usado quando o agente não especifica
+
+agents:
+  # Agente inline — definido diretamente no config (não precisa de arquivo YAML separado)
+  - name: code-reviewer
+    description: Revisa código para qualidade, bugs e segurança
+    systemPrompt: |
+      Você é um revisor de código especialista...
+    skills:
+      - read-file
+      - search-code
+    maxIterations: 5
+
+  # Agente com override de provider/modelo
+  - name: doc-writer
+    description: Gera documentação
+    provider: anthropic       # sobrescreve defaultProvider só para este agente
+    model: claude-haiku-4-5-20251001  # sobrescreve defaultModel
+    systemPrompt: |
+      Você é um redator técnico...
+    maxIterations: 3
+```
+
+### Herança de provider e modelo
+
+```
+omni-ai.yaml
+  └─ defaultProvider: copilot          ← se aplica a todos os agentes
+       └─ providers[copilot]
+            └─ defaultModel: gpt-4o   ← se aplica a todos os agentes
+
+agents/backend/backend-dev.yaml
+  ├─ provider: (ausente)  →  usa defaultProvider (copilot)
+  ├─ provider: anthropic  →  sobrescreve só para este agente
+  ├─ model: (ausente)     →  usa defaultModel do provider resolvido
+  └─ model: gpt-4o-mini   →  sobrescreve só para este agente
+```
+
+### Campos do agente YAML
+
+| Campo | Tipo | Padrão | Descrição |
+|-------|------|--------|-----------|
+| `name` | `string` | obrigatório | Identificador único |
+| `description` | `string` | obrigatório | O que o agente faz |
+| `provider` | `string` | herda | Nome do provider — omita para usar `defaultProvider` |
+| `model` | `string` | herda | ID do modelo — omita para usar `defaultModel` do provider |
+| `systemPrompt` | `string` | obrigatório | Instruções do agente |
+| `skills` | `string[]` | `[]` | Skills que o agente pode chamar como ferramentas |
+| `maxIterations` | `number` | `10` | Máximo de iterações do loop agentico |
+| `temperature` | `number` | padrão do provider | Temperatura de amostragem (0–2; max 1.0 para Anthropic) |
 
 ---
 
-## Memory & context compaction
+## Catálogo de agentes
 
-Install the memory package:
+### Backend (7 agentes)
+
+| Agente | Arquivo | O que faz |
+|--------|---------|-----------|
+| `backend-dev` | `agents/backend/backend-dev.yaml` | Orquestrador — feature NestJS completa: schema → serviço → resolver → listeners → tests |
+| `backend-schema` | `agents/backend/backend-schema.yaml` | Schema DynamoDB OneTable com `defineSchema()` |
+| `backend-service` | `agents/backend/backend-service.yaml` | NestJS service com CRUD, eventos, error helpers, caching |
+| `backend-resolver` | `agents/backend/backend-resolver.yaml` | GraphQL resolver com padrão federation + SDL |
+| `backend-listener` | `agents/backend/backend-listener.yaml` | Event listeners com `@OnEventCatcher` |
+| `backend-test` | `agents/backend/backend-test.yaml` | Testes Jest de integração com DynamoDB local real |
+| `backend-atom-app` | `agents/backend/backend-atom-app.yaml` | Conectores Atom framework (sessões, ARNs, roteamento de mensagens) |
+
+### Frontend (5 agentes)
+
+| Agente | Arquivo | O que faz |
+|--------|---------|-----------|
+| `frontend-dev` | `agents/frontend/frontend-dev.yaml` | Orquestrador — feature React completa: route → componentes → hooks |
+| `frontend-ui-component` | `agents/frontend/frontend-ui-component.yaml` | Componentes UI primitivos estilo shadcn/ui com CVA + Radix |
+| `frontend-module-component` | `agents/frontend/frontend-module-component.yaml` | Componentes de feature conectados a dados (TanStack Query) |
+| `frontend-page-route` | `agents/frontend/frontend-page-route.yaml` | Páginas TanStack Router com layouts responsivos |
+| `frontend-custom-hook` | `agents/frontend/frontend-custom-hook.yaml` | Custom React hooks tipados e SSR-safe |
+
+### UX (5 agentes)
+
+| Agente | Arquivo | O que faz |
+|--------|---------|-----------|
+| `ux-lead` | `agents/ux/ux-lead.yaml` | Orquestrador — auditoria UX completa em 10 dimensões, corrige críticos e documenta os demais |
+| `ux-reviewer` | `agents/ux/ux-reviewer.yaml` | Revisão UX detalhada com findings por severidade (Critical / Moderate / Low) |
+| `ux-states` | `agents/ux/ux-states.yaml` | Componentes de estado: Skeleton, Empty, Error e Success |
+| `ux-forms` | `agents/ux/ux-forms.yaml` | Formulários com validação, autocomplete, acessibilidade e estados de loading |
+| `ux-motion` | `agents/ux/ux-motion.yaml` | Micro-interações e transições com `motion-safe:` obrigatório |
+
+### QA (4 agentes)
+
+| Agente | Arquivo | O que faz |
+|--------|---------|-----------|
+| `qa-lead` | `agents/qa/qa-lead.yaml` | Orquestrador — classifica arquivos, delega aos agentes especializados e emite veredicto de merge |
+| `qa-frontend` | `agents/qa/qa-frontend.yaml` | Valida React/TypeScript: imports, tokens Tailwind, responsividade, acessibilidade |
+| `qa-ux` | `agents/qa/qa-ux.yaml` | Valida UX: feedback states, formulários, motion, content tone |
+| `qa-backend` | `agents/qa/qa-backend.yaml` | Valida NestJS: services, resolvers, schema GraphQL, listeners, testes |
+
+---
+
+## Skills disponíveis
+
+As skills são as ferramentas que os agentes podem chamar durante o loop agentico. Todas operam dentro do `cwd` (diretório do projeto alvo) — nunca fora dele.
+
+| Skill | Package | O que faz |
+|-------|---------|-----------|
+| `read-file` | `@omni-ai/skills-fs` | Lê o conteúdo completo de um arquivo |
+| `write-file` | `@omni-ai/skills-fs` | Escreve ou sobrescreve um arquivo (cria diretórios automaticamente) |
+| `list-directory` | `@omni-ai/skills-fs` | Lista arquivos em um diretório (com suporte a recursivo e filtro por extensão) |
+| `search-code` | `@omni-ai/skills-code` | Busca texto ou regex em arquivos TypeScript/TSX |
+| `audit-accessibility` | `@omni-ai/skills-ux` | Scan heurístico de a11y em componentes TSX (alt, aria-label, foco, cores hardcoded...) |
+
+### Segurança das skills de filesystem
+
+`read-file`, `write-file` e `list-directory` resolvem todos os caminhos relativos ao `cwd` e **rejeitam qualquer path que escape o diretório do projeto** (bloqueando ataques de path traversal como `../../../etc/passwd`).
+
+---
+
+## Memória e sessões
+
+### Via CLI (--session)
 
 ```bash
-pnpm add @omni-ai/memory
+# Primeira execução — sessão é criada e armazenada em ~/.omni-ai/sessions.db
+omni run backend-dev "crie o módulo de pedidos com CRUD" --session dev1:orders
+
+# Segunda execução — o agente carrega o histórico da sessão anterior como contexto
+omni run backend-dev "adicione o listener de busca ao módulo de pedidos" --session dev1:orders
+
+# Consulta de contexto anterior
+omni run backend-dev "quais arquivos você criou na sessão anterior?" --session dev1:orders
 ```
 
-### How it reduces token consumption
+O ID de sessão segue o formato `"resourceId:threadId"`. Use `resourceId` para identificar o usuário ou projeto, e `threadId` para a feature ou conversa específica.
 
-```
-Without memory                     With ObservationMasking
-──────────────────────────────     ──────────────────────────────
-Iteration 1:  1 000 tokens         Iteration 1:  1 000 tokens
-Iteration 2:  3 500 tokens         Iteration 2:  3 500 tokens
-Iteration 3:  8 200 tokens   →     Iteration 3:  1 800 tokens  ← old tool results masked
-Iteration 4: 14 000 tokens         Iteration 4:  2 100 tokens
-Total:       26 700 tokens         Total:         8 400 tokens  (68% reduction)
-```
-
-### Compactors
-
-| Class | Strategy | LLM calls | Best for |
-|-------|----------|-----------|----------|
-| `ObservationMaskingCompactor` | Replaces old tool result bodies with `[masked ~N tokens]` | 0 | Tool-heavy agents (file readers, code searchers) |
-| `SummaryCompactor` | LLM summarizes messages older than N, keeps recent verbatim | 1 per trigger | Long conversations, multi-step reasoning |
-
-### Storage backends
-
-| Class | Persistence | Search | Dependencies |
-|-------|------------|--------|--------------|
-| `InMemoryStore` | Process lifetime only | Keyword (substring) | None |
-| `SQLiteMemoryStore` | Local `.db` file | FTS5 full-text | `better-sqlite3` (~300 KB) |
-
-### Usage examples
-
-**In-session compaction only** (zero config, zero extra dependencies):
+### Via API programática
 
 ```typescript
-import { ObservationMaskingCompactor } from "@omni-ai/memory";
-
-const agent = new Agent(
-  {
-    ...agentConfig,
-    memory: {
-      compactor: new ObservationMaskingCompactor(),
-      maxContextTokens: 60_000,   // trigger at 42k tokens (70%)
-    },
-  },
-  provider,
-  skills
-);
-
-const result = await agent.run({ input: "Analyse all files in src/" });
-```
-
-**Persistent memory across sessions** (SQLite):
-
-```typescript
-import { SQLiteMemoryStore, SummaryCompactor } from "@omni-ai/memory";
-
-const store = new SQLiteMemoryStore({ path: "./sessions.db" });
-
-const agent = new Agent(
-  { ...agentConfig, memory: { store, compactor: new SummaryCompactor() } },
-  provider,
-  skills
-);
-
-// First run — session is stored automatically
-await agent.run({
-  input: "Review the auth module",
-  session: { resourceId: "user-42", threadId: "review-2025-05-25" },
-});
-
-// Later run — agent loads previous messages as context
-await agent.run({
-  input: "What issues did you find last time?",
-  session: { resourceId: "user-42", threadId: "review-2025-05-25" },
-});
-
-await store.close();
-```
-
-**Both together** (recommended for production):
-
-```typescript
+import { createRuntime } from "@omni-ai/core";
 import { SQLiteMemoryStore, ObservationMaskingCompactor } from "@omni-ai/memory";
 
-const memory = {
-  store: new SQLiteMemoryStore({ path: "./sessions.db" }),
-  compactor: new ObservationMaskingCompactor(),
-  maxContextTokens: 80_000,
-  lastMessages: 8,
+const runtime = await createRuntime({
+  skills: [/* suas skills extras */],
+});
+
+// Sem memória — execução simples
+const result = await runtime.run("backend-dev", "crie o módulo de clientes");
+console.log(result.output);
+
+// Com memória entre sessões
+const store = new SQLiteMemoryStore({ path: "./sessions.db" });
+
+const result2 = await runtime.run(
+  "backend-dev",
+  "adicione busca ao módulo de clientes",
+  {
+    session: { resourceId: "user-42", threadId: "feature-customers" },
+    memoryStore: store,
+  }
+);
+```
+
+### Compactors — redução de consumo de tokens
+
+Sem compaction, cada iteração reencaminha todo o histórico:
+
+```
+Iteração 1:  1.000 tokens
+Iteração 2:  3.500 tokens
+Iteração 3:  8.200 tokens    → Total: 26.700 tokens
+Iteração 4: 14.000 tokens
+```
+
+Com `ObservationMaskingCompactor`:
+
+```
+Iteração 1:  1.000 tokens
+Iteração 2:  3.500 tokens
+Iteração 3:  1.800 tokens    ← resultados antigos de tool mascarados
+Iteração 4:  2.100 tokens    → Total: 8.400 tokens  (redução de 68%)
+```
+
+| Compactor | Estratégia | Chamadas LLM | Ideal para |
+|-----------|-----------|--------------|-----------|
+| `ObservationMaskingCompactor` | Substitui corpo de tool results antigos por `[masked ~N tokens]` | 0 | Agentes intensivos em leitura de arquivos |
+| `SummaryCompactor` | LLM resume mensagens antigas, mantém N recentes verbatim | 1 por trigger | Conversas longas, raciocínio multi-step |
+
+---
+
+## Estrutura do repositório
+
+```
+omni-ai/
+│
+├── packages/                          # pacotes npm (pnpm workspaces)
+│   ├── core/                          # @omni-ai/core
+│   │   └── src/
+│   │       ├── types.ts               # IProvider, ISkill, IAgent, IMemoryStore...
+│   │       ├── config/
+│   │       │   ├── schema.ts          # Zod schema do omni-ai.yaml
+│   │       │   └── loader.ts          # loadConfig() com substituição de env vars
+│   │       ├── agents/
+│   │       │   ├── agent.ts           # Loop agentico + integração de memória
+│   │       │   └── loader.ts          # loadAgent() — carrega YAML + resolve provider
+│   │       ├── providers/registry.ts  # ProviderRegistry (factory por type string)
+│   │       ├── skills/registry.ts     # SkillRegistry
+│   │       └── bootstrap.ts           # createRuntime() — API de alto nível
+│   │
+│   ├── provider-anthropic/            # @omni-ai/provider-anthropic
+│   │   └── src/
+│   │       ├── provider.ts            # AnthropicProvider implements IProvider
+│   │       ├── mappers.ts             # Conversão omni-ai ↔ Anthropic SDK types
+│   │       └── index.ts              # Registra "anthropic" no ProviderRegistry
+│   │
+│   ├── provider-openai/               # @omni-ai/provider-openai
+│   │   └── src/
+│   │       ├── provider.ts            # OpenAIProvider implements IProvider
+│   │       ├── mappers.ts             # Conversão omni-ai ↔ OpenAI SDK types
+│   │       └── index.ts              # Registra "openai" e "copilot" no ProviderRegistry
+│   │
+│   ├── memory/                        # @omni-ai/memory
+│   │   └── src/
+│   │       ├── stores/
+│   │       │   ├── in-memory.ts       # InMemoryStore (padrão, sem persistência)
+│   │       │   └── sqlite.ts          # SQLiteMemoryStore (arquivo local, FTS5)
+│   │       ├── compactors/
+│   │       │   ├── observation-masking.ts  # Mascara tool results antigos (zero LLM)
+│   │       │   └── summary.ts              # Resumo por LLM (1 chamada por trigger)
+│   │       └── utils.ts               # estimateTokens() compartilhado
+│   │
+│   ├── skills-fs/                     # @omni-ai/skills-fs
+│   │   └── src/
+│   │       ├── read-file.ts           # Lê arquivo (com validação de path traversal)
+│   │       ├── write-file.ts          # Escreve arquivo (com validação de path)
+│   │       └── list-directory.ts      # Lista diretório (com validação de path)
+│   │
+│   ├── skills-code/                   # @omni-ai/skills-code
+│   │   └── src/
+│   │       └── search-code.ts         # Busca texto/regex em arquivos TypeScript
+│   │
+│   ├── skills-ux/                     # @omni-ai/skills-ux
+│   │   └── src/
+│   │       └── audit-accessibility.ts # Scan heurístico a11y de componentes TSX
+│   │
+│   └── cli/                           # @omni-ai/cli
+│       └── src/
+│           ├── bin.ts                 # Entry point, carrega .env
+│           ├── commands/
+│           │   ├── run.ts             # omni run <agent> "<prompt>"
+│           │   └── list.ts            # omni list agents|skills|providers
+│           └── utils/
+│               ├── format.ts          # Output formatado (tokens, iterações, erros)
+│               └── config-path.ts     # Resolve caminho do omni-ai.yaml
+│
+├── agents/                            # Definições YAML dos agentes (21 agentes)
+│   ├── backend/                       # 7 agentes NestJS/TypeScript
+│   ├── frontend/                      # 5 agentes React/TypeScript
+│   ├── ux/                            # 5 agentes UX
+│   └── qa/                            # 4 agentes QA
+│
+├── docs/                              # Documentação
+│   ├── providers/
+│   │   ├── anthropic.md               # Setup detalhado Anthropic
+│   │   ├── openai.md                  # Setup detalhado OpenAI
+│   │   └── copilot.md                 # Setup detalhado GitHub Copilot
+│   └── templates/
+│       ├── agent.yaml                 # Template para novos agentes
+│       └── skill.ts                   # Template para novas skills
+│
+├── config/
+│   └── omni-ai.example.yaml           # Template de configuração (copie → omni-ai.yaml)
+│
+├── .env.example                       # Template de variáveis de ambiente
+└── tsconfig.ide.json                  # Paths para resolução de tipos no VS Code
+```
+
+---
+
+## Usando de outro projeto
+
+O `omni-ai` é um repositório central — os agentes e o config ficam nele. Você usa o CLI de dentro de qualquer projeto alvo.
+
+### Setup único (instalação global)
+
+```bash
+# Na raiz do omni-ai, uma vez só:
+cd /caminho/para/omni-ai
+pnpm --filter @omni-ai/cli link --global
+```
+
+### Uso do dia a dia
+
+```bash
+# 1. Entrar no projeto alvo
+cd /caminho/para/meu-projeto
+
+# 2. Rodar agentes normalmente
+omni run backend-dev "crie o módulo de produtos"
+omni run frontend-dev "crie a página de listagem de produtos"
+omni run qa-lead "valide src/products/"
+omni run ux-reviewer "audite src/components/modules/Products/"
+```
+
+As skills sempre operam em `/caminho/para/meu-projeto` — o agente lê, escreve e busca arquivos nesse diretório, nunca fora dele.
+
+### Alternativa sem instalação global
+
+```bash
+# Usando node diretamente
+node /caminho/para/omni-ai/packages/cli/dist/bin.js run backend-dev "..."
+
+# Ou com alias no shell (~/.bashrc, ~/.zshrc ou $PROFILE no PowerShell)
+alias omni="node /caminho/para/omni-ai/packages/cli/dist/bin.js"
+```
+
+---
+
+## Estendendo o framework
+
+### Criar um agente personalizado
+
+Copie `docs/templates/agent.yaml` para `agents/<domínio>/<domínio>-<função>.yaml`:
+
+```yaml
+name: my-agent
+description: O que este agente faz em uma linha
+# provider: anthropic   # opcional — herda defaultProvider do omni-ai.yaml
+# model: gpt-4o-mini    # opcional — herda defaultModel do provider
+systemPrompt: |
+  Você é um assistente especializado em...
+  Descreva as restrições, formato de output e comportamento.
+skills:
+  - read-file
+  - search-code
+  - write-file
+maxIterations: 10
+temperature: 0.2
+```
+
+O arquivo estará disponível via `omni run my-agent "..."` imediatamente — sem rebuild.
+
+### Criar uma skill personalizada
+
+Copie `docs/templates/skill.ts` e implemente `ISkill`:
+
+```typescript
+import type { ISkill } from "@omni-ai/core";
+import { z } from "zod";
+
+const InputSchema = z.object({
+  query: z.string().describe("Termo a buscar"),
+});
+
+type Input = z.infer<typeof InputSchema>;
+
+export const myDatabaseSkill: ISkill<Input, string[]> = {
+  name: "search-database",
+  description: "Busca registros no banco de dados externo",
+
+  async execute(input: Input): Promise<string[]> {
+    const { query } = InputSchema.parse(input);
+    // sua lógica aqui
+    return await fetchFromExternalApi(query);
+  },
 };
 ```
 
-### Memory interfaces (for custom backends)
-
-Implement `IMemoryStore` from `@omni-ai/core` to use any storage backend:
+Registre a skill ao criar o runtime:
 
 ```typescript
-import type { IMemoryStore, SessionId, MemoryEntry } from "@omni-ai/core";
+import { createRuntime } from "@omni-ai/core";
+import { myDatabaseSkill } from "./my-database-skill.js";
 
-export class RedisMemoryStore implements IMemoryStore {
-  async saveMessages(session: SessionId, messages: MemoryEntry[]) { ... }
-  async loadMessages(session: SessionId, limit?: number) { ... }
-  async search?(session: SessionId, query: string) { ... }
-}
+const runtime = await createRuntime({
+  skills: [myDatabaseSkill],
+});
 ```
 
----
+Ou passe diretamente no CLI customizando o `run.ts`.
 
-## Extending
+### Criar um provider personalizado
 
-### Create a custom provider
-
-Implement `IProvider` from `@omni-ai/core`:
+Implemente `IProvider` de `@omni-ai/core`:
 
 ```typescript
-import type { IProvider, ProviderCapabilities, CompletionRequest, CompletionResponse } from "@omni-ai/core";
+import type { IProvider, CompletionRequest, CompletionResponse } from "@omni-ai/core";
+import { registerProvider } from "@omni-ai/core";
 
-export class MyProvider implements IProvider {
-  readonly name = "my-provider";
-  readonly capabilities: ProviderCapabilities = {
-    chat: true,
-    embedding: false,
-    streaming: true,
-    toolUse: true,
-    vision: false,
+class MyProvider implements IProvider {
+  readonly name: string;
+  readonly capabilities = {
+    chat: true, embedding: false, streaming: false, toolUse: true, vision: false,
   };
+
+  constructor(private readonly config: { apiKey: string; name: string }) {
+    this.name = config.name;
+  }
 
   async complete(request: CompletionRequest): Promise<CompletionResponse> {
     const response = await callMyApi(request);
     return {
       content: response.text,
-      toolCalls: response.tool_calls,
-      usage: { inputTokens: response.usage.in, outputTokens: response.usage.out },
+      toolCalls: [],
+      usage: { inputTokens: response.in, outputTokens: response.out },
       model: request.model ?? "my-model",
       provider: this.name,
     };
   }
-
-  async *stream(request: CompletionRequest): AsyncGenerator<string> {
-    for await (const chunk of streamMyApi(request)) yield chunk.text;
-  }
 }
+
+// Registrar o type string para o omni-ai.yaml
+registerProvider("my-provider", (config) => new MyProvider(config));
 ```
 
-### Create a custom skill
-
-Copy `skills/_template/skill.ts` and implement `ISkill`:
-
-```typescript
-import type { ISkill, SkillContext } from "@omni-ai/core";
-
-interface Input { query: string; }
-interface Output { results: string[]; }
-
-export const mySearchSkill: ISkill<Input, Output> = {
-  name: "my-search",
-  description: "Search an external database for relevant records",
-
-  async execute({ query }: Input, ctx: SkillContext): Promise<Output> {
-    const results = await fetchExternalApi(query);
-    return { results };
-  },
-};
-```
-
-### Create a custom agent
-
-Copy `agents/_template/agent.yaml`:
+Adicione o `docs/providers/<nome>.md` e declare no `omni-ai.yaml`:
 
 ```yaml
-name: my-agent
-description: What this agent does
-# provider: my-provider   # optional — inherits defaultProvider from omni-ai.yaml
-# model: my-model         # optional — inherits defaultModel from the provider config
-systemPrompt: |
-  You are a specialized assistant for...
-  Describe constraints, output format, and behavior.
-skills:
-  - read-file
-  - my-search
-maxIterations: 10
-temperature: 0.3
+providers:
+  - name: my-provider
+    type: my-provider
+    apiKey: ${MY_API_KEY}
+    defaultModel: my-model-v1
 ```
 
 ---
 
-## TypeScript interfaces
-
-Key types from `@omni-ai/core`:
+## Interfaces TypeScript principais
 
 ```typescript
+// @omni-ai/core
+
 interface IProvider {
   readonly name: string;
   readonly capabilities: ProviderCapabilities;
@@ -615,7 +758,7 @@ interface IProvider {
 interface ISkill<TInput = unknown, TOutput = unknown> {
   readonly name: string;
   readonly description: string;
-  execute(input: TInput, ctx: SkillContext): Promise<TOutput>;
+  execute(input: TInput): Promise<TOutput>;
 }
 
 interface IAgent {
@@ -626,48 +769,76 @@ interface IAgent {
 interface AgentConfig {
   name: string;
   description: string;
-  provider?: string;        // optional — inherits from config defaultProvider
-  model?: string;           // optional — inherits from provider defaultModel
+  provider?: string;        // opcional — herda defaultProvider
+  model?: string;           // opcional — herda defaultModel do provider
   systemPrompt: string;
   skills?: string[];
-  maxIterations?: number;   // default: 10
+  maxIterations?: number;   // padrão: 10
   temperature?: number;
+  memory?: AgentMemoryConfig;
+}
+
+interface AgentRunOptions {
+  input: string;
+  context?: Record<string, unknown>;
+  session?: SessionId;      // habilita persistência de memória
+}
+
+interface AgentRunResult {
+  output: string;
+  iterations: number;
+  usage: { inputTokens: number; outputTokens: number };
 }
 ```
 
 ---
 
-## Requirements
+## Comandos de desenvolvimento
 
-| Tool | Minimum version |
-|------|----------------|
-| Node.js | 20.x |
-| pnpm | 9.x |
-| TypeScript | 5.7 |
+```bash
+# Instalar dependências
+pnpm install
+
+# Build de todos os pacotes
+pnpm build
+
+# Type-check sem build
+pnpm typecheck
+
+# Rodar testes (quando disponíveis)
+pnpm test
+
+# Build de um pacote específico
+pnpm --filter @omni-ai/core build
+
+# Reconstruir e testar o CLI
+pnpm build && omni list agents
+```
 
 ---
 
 ## Roadmap
 
-- [x] `@omni-ai/core` — interfaces, registry, config schema (Zod)
-- [x] `@omni-ai/skills-fs` — read-file, write-file, list-directory
-- [x] `@omni-ai/skills-code` — search-code (ripgrep)
-- [x] `@omni-ai/skills-ux` — audit-accessibility
-- [x] Backend agents — schema, service, resolver, listener, test, atom-app, dev (7)
-- [x] Frontend agents — ui-component, module-component, page-route, custom-hook, dev (5)
-- [x] UX agents — reviewer, states, forms, motion, lead (5)
-- [x] QA agents — qa-frontend, qa-ux, qa-backend, qa-lead (4)
-- [x] Provider/model inheritance — agents inherit from config defaults
-- [x] `@omni-ai/memory` — session memory + compaction (InMemoryStore, SQLiteMemoryStore, ObservationMaskingCompactor, SummaryCompactor)
-- [ ] `@omni-ai/provider-anthropic` — production Anthropic adapter
-- [ ] `@omni-ai/provider-openai` — production OpenAI adapter
-- [ ] `@omni-ai/provider-copilot` — production GitHub Copilot adapter
-- [ ] `@omni-ai/cli` — `omni run <agent> "<prompt>"` CLI
-- [ ] Agent chaining — pipe output of one agent as input to another
-- [ ] Streaming support — real-time token streaming to stdout
+- [x] `@omni-ai/core` — interfaces, ProviderRegistry, SkillRegistry, config schema (Zod)
+- [x] `@omni-ai/provider-anthropic` — adapter completo com mapeamento de tipos e tool use
+- [x] `@omni-ai/provider-openai` — adapter completo (cobre OpenAI, Copilot, Groq, Ollama, Azure)
+- [x] `@omni-ai/skills-fs` — read-file, write-file, list-directory (com proteção path traversal)
+- [x] `@omni-ai/skills-code` — search-code (regex, filtro por extensão, maxResults)
+- [x] `@omni-ai/skills-ux` — audit-accessibility (scan heurístico TSX)
+- [x] `@omni-ai/memory` — InMemoryStore, SQLiteMemoryStore, ObservationMaskingCompactor, SummaryCompactor
+- [x] `@omni-ai/cli` — `omni run`, `omni list`, `--session`, `--verbose`, `--output`
+- [x] Bootstrap `createRuntime()` — API de alto nível para uso programático
+- [x] 21 agentes prontos — backend (7), frontend (5), ux (5), qa (4)
+- [x] Herança de provider/modelo — agentes herdam do config, podem sobrescrever
+- [x] Agentes inline — definição direta no `omni-ai.yaml` sem arquivo YAML separado
+- [ ] Streaming de tokens em tempo real (`omni run ... --stream`)
+- [ ] Encadeamento de agentes — output de um agente como input de outro
+- [ ] `omni init` — wizard interativo para configuração inicial
+- [ ] Suporte a embeddings — `IProvider.embed()` com vetores de contexto
+- [ ] Testes automatizados por pacote
 
 ---
 
-## License
+## Licença
 
 MIT
