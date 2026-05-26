@@ -68,6 +68,7 @@ export class Agent implements IAgent {
         systemPrompt: this.config.systemPrompt,
         temperature: this.config.temperature,
         tools: tools.length > 0 ? tools : undefined,
+        onToken: options.onToken,
       });
 
       if (response.usage) {

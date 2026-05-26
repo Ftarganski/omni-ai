@@ -76,7 +76,8 @@ export interface CompletionRequest {
   temperature?: number;
   systemPrompt?: string;
   tools?: ToolDefinition[];
-  stream?: boolean;
+  /** Called with each text chunk when streaming. If omitted, completes in one shot. */
+  onToken?: (chunk: string) => void;
 }
 
 export interface CompletionResponse {
@@ -153,6 +154,8 @@ export interface AgentRunOptions {
   context?: Record<string, unknown>;
   /** Provide a session to enable message history persistence. */
   session?: SessionId;
+  /** Called with each text chunk from the LLM while the agent runs. */
+  onToken?: (chunk: string) => void;
 }
 
 export interface AgentRunResult {

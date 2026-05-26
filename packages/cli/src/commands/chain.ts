@@ -20,6 +20,7 @@ interface ChainOptions {
   config?: string;
   output?: string;
   verbose?: boolean;
+  stream?: boolean;
 }
 
 export async function chainCommand(
@@ -52,6 +53,10 @@ export async function chainCommand(
 
   const providerLabel = `${runtime.config.defaultProvider} / ${runtime.config.providers.find((p) => p.name === runtime.config.defaultProvider)?.defaultModel ?? "default"}`;
 
+  const onToken = opts.stream
+    ? (chunk: string) => process.stdout.write(chunk)
+    : undefined;
+
   let currentInput = prompt;
   let totalInput = 0;
   let totalOutput = 0;
@@ -63,19 +68,23 @@ export async function chainCommand(
     const agentName = agents[i];
     console.log(agentHeader(agentName, providerLabel));
 
+    if (opts.stream) process.stdout.write("\n");
+
     let result;
     try {
-      result = await runtime.run(agentName, currentInput);
+      result = await runtime.run(agentName, currentInput, { onToken });
     } catch (err) {
       console.error(errorLine(err instanceof Error ? err.message : String(err)));
       process.exit(1);
     }
 
-    console.log(iterationLine(result.iterations));
-
-    if (opts.verbose) {
+    if (opts.stream) {
+      process.stdout.write("\n");
+    } else if (opts.verbose) {
       console.log("\n" + result.output + "\n");
     }
+
+    console.log(iterationLine(result.iterations));
 
     if (result.usage) {
       totalInput += result.usage.inputTokens;
@@ -90,7 +99,9 @@ export async function chainCommand(
     }
   }
 
-  console.log("\n" + lastOutput + "\n");
+  if (!opts.stream && !opts.verbose) {
+    console.log("\n" + lastOutput + "\n");
+  }
 
   if (opts.output) {
     await writeFile(opts.output, lastOutput, "utf-8");

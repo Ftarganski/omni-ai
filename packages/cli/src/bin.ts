@@ -28,6 +28,7 @@ program
   .option("-s, --session <id>", "Session ID for memory (format: resourceId:threadId)")
   .option("-o, --output <file>", "Save output to file")
   .option("-v, --verbose", "Show iteration details")
+  .option("--stream", "Stream tokens in real time as the agent responds")
   .action(runCommand);
 
 program
@@ -41,6 +42,7 @@ program
   .option("-c, --config <path>", "Path to omni-ai.yaml")
   .option("-o, --output <file>", "Save final output to file")
   .option("-v, --verbose", "Print each agent's full output as the chain progresses")
+  .option("-s, --stream", "Stream tokens from each agent in real time")
   .action(chainCommand);
 
 const list = program.command("list").description("List available resources");

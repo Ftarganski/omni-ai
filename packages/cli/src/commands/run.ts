@@ -23,6 +23,7 @@ interface RunOptions {
   session?: string;
   output?: string;
   verbose?: boolean;
+  stream?: boolean;
 }
 
 function parseSession(raw: string): { resourceId: string; threadId: string } {
@@ -74,17 +75,28 @@ export async function runCommand(
   const providerLabel = `${runtime.config.defaultProvider} / ${runtime.config.providers.find((p) => p.name === runtime.config.defaultProvider)?.defaultModel ?? "default"}`;
   console.log("\n" + agentHeader(agent, providerLabel));
 
+  const onToken = opts.stream
+    ? (chunk: string) => process.stdout.write(chunk)
+    : undefined;
+
+  if (opts.stream) process.stdout.write("\n");
+
   let result;
   try {
-    result = await runtime.run(agent, prompt, { session: sessionId });
+    result = await runtime.run(agent, prompt, { session: sessionId, onToken });
   } catch (err) {
     console.error(errorLine(err instanceof Error ? err.message : String(err)));
     await memoryStore?.close?.();
     process.exit(1);
   }
 
+  if (opts.stream) {
+    process.stdout.write("\n");
+  } else {
+    console.log("\n" + result.output + "\n");
+  }
+
   console.log(iterationLine(result.iterations));
-  console.log("\n" + result.output + "\n");
 
   if (opts.output) {
     await writeFile(opts.output, result.output, "utf-8");

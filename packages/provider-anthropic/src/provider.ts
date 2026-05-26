@@ -17,7 +17,7 @@ export class AnthropicProvider implements IProvider {
   readonly capabilities: ProviderCapabilities = {
     chat: true,
     embedding: false,
-    streaming: false,
+    streaming: true,
     toolUse: true,
     vision: true,
   };
@@ -46,15 +46,23 @@ export class AnthropicProvider implements IProvider {
         ? toAnthropicTools(request.tools)
         : undefined;
 
-    const response = await this.client.messages.create({
+    const params = {
       model,
       max_tokens: request.maxTokens ?? 8096,
       temperature: request.temperature,
       system,
       messages,
       tools,
-    });
+    } as const;
 
+    if (request.onToken) {
+      const stream = this.client.messages.stream(params);
+      stream.on("text", request.onToken);
+      const finalMessage = await stream.finalMessage();
+      return fromAnthropicResponse(finalMessage, this.name);
+    }
+
+    const response = await this.client.messages.create(params);
     return fromAnthropicResponse(response, this.name);
   }
 }

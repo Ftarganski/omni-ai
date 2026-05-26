@@ -122,6 +122,7 @@ omni run <agent> "<prompt>" [opções]
 | `--session <id>` | string | ID de sessão no formato `"resourceId:threadId"` — habilita memória SQLite entre runs |
 | `--output <file>` | string | Salva o output completo em um arquivo |
 | `--verbose` | flag | Exibe cada iteração, tool calls e contagem de tokens por step |
+| `--stream` | flag | Transmite tokens em tempo real enquanto o agente responde |
 
 **Exemplos:**
 
@@ -915,7 +916,7 @@ pnpm build && omni list agents
 - [x] 21 agentes prontos — backend (7), frontend (5), ux (5), qa (4)
 - [x] Herança de provider/modelo — agentes herdam do config, podem sobrescrever
 - [x] Agentes inline — definição direta no `omni-ai.yaml` sem arquivo YAML separado
-- [ ] Streaming de tokens em tempo real (`omni run ... --stream`)
+- [x] Streaming de tokens em tempo real (`omni run ... --stream`, `omni chain ... --stream`)
 - [x] Encadeamento de agentes — output de um agente como input de outro (`omni chain`)
 - [x] `omni init` — wizard interativo para configuração inicial
 - [ ] Suporte a embeddings — `IProvider.embed()` com vetores de contexto
