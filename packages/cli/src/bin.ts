@@ -6,6 +6,7 @@ import { dirname } from "path";
 import { Command } from "commander";
 import { runCommand } from "./commands/run.js";
 import { listCommand } from "./commands/list.js";
+import { initCommand } from "./commands/init.js";
 
 // Load .env from the omni-ai repo root (4 levels up from packages/cli/dist/)
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -27,6 +28,11 @@ program
   .option("-o, --output <file>", "Save output to file")
   .option("-v, --verbose", "Show iteration details")
   .action(runCommand);
+
+program
+  .command("init")
+  .description("Interactive setup wizard — creates omni-ai.yaml and configures .env")
+  .action(initCommand);
 
 const list = program.command("list").description("List available resources");
 

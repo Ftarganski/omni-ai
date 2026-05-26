@@ -52,6 +52,14 @@ pnpm build
 
 ### 2. Configurar o provider
 
+**Opção A — wizard interativo (recomendado):**
+
+```bash
+omni init
+```
+
+**Opção B — manual:**
+
 ```bash
 cp config/omni-ai.example.yaml config/omni-ai.yaml
 cp .env.example .env
@@ -146,6 +154,29 @@ omni list agents      # Lista todos os agentes disponíveis (nome + descrição)
 omni list skills      # Lista todas as skills registradas
 omni list providers   # Lista os providers registrados e seus tipos
 ```
+
+---
+
+### `omni init`
+
+Wizard interativo que gera `config/omni-ai.yaml` e atualiza o `.env` sem editar arquivos manualmente.
+
+```bash
+omni init
+```
+
+O wizard irá:
+
+1. Perguntar qual provider usar (Copilot, Anthropic, OpenAI ou Custom/self-hosted)
+2. Solicitar a API key ou token via campo oculto (não aparece no terminal)
+3. Permitir selecionar o modelo padrão
+4. Opcionalmente configurar um segundo provider para agentes específicos
+5. Gerar `config/omni-ai.yaml` e atualizar `.env` preservando entradas existentes
+6. Exibir os próximos passos com exemplos de comandos
+
+**Quando usar:** na primeira vez que configurar o omni-ai, ou quando quiser trocar ou adicionar um provider.
+
+> Se `config/omni-ai.yaml` já existir, o wizard pergunta antes de sobrescrever.
 
 ---
 
@@ -833,7 +864,7 @@ pnpm build && omni list agents
 - [x] Agentes inline — definição direta no `omni-ai.yaml` sem arquivo YAML separado
 - [ ] Streaming de tokens em tempo real (`omni run ... --stream`)
 - [ ] Encadeamento de agentes — output de um agente como input de outro
-- [ ] `omni init` — wizard interativo para configuração inicial
+- [x] `omni init` — wizard interativo para configuração inicial
 - [ ] Suporte a embeddings — `IProvider.embed()` com vetores de contexto
 - [ ] Testes automatizados por pacote
 
