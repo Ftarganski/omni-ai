@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { listDirectorySkill } from "../src/list-directory.js";
+import { listDirectorySkill } from "../../src/fs/list-directory.js";
 
 let tempDir: string;
 let originalCwd: string;

@@ -6,9 +6,6 @@ export default defineConfig({
     alias: {
       "@omni-ai/core": resolve("packages/core/src/index.ts"),
       "@omni-ai/memory": resolve("packages/memory/src/index.ts"),
-      "@omni-ai/skills-fs": resolve("packages/skills-fs/src/index.ts"),
-      "@omni-ai/skills-code": resolve("packages/skills-code/src/index.ts"),
-      "@omni-ai/skills-ux": resolve("packages/skills-ux/src/index.ts"),
     },
   },
   test: {
@@ -32,8 +29,8 @@ export default defineConfig({
         // External-service adapters — SQLite and vector store need real databases
         "packages/memory/src/stores/sqlite.ts",
         "packages/memory/src/stores/semantic-memory-store.ts",
-        // Consolidated skills package (lives in packages/skills/ — separate PR)
-        "packages/skills/**",
+        // Skills infra — CLI entry, provider index re-exports
+        "packages/skills/src/index.ts",
       ],
       thresholds: {
         lines: 80,
