@@ -1,5 +1,5 @@
-import { readFile } from "fs/promises";
-import { resolve } from "path";
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import YAML from "yaml";
 import { ZodError } from "zod";
 import { type OmniAiConfig, OmniAiConfigSchema } from "./schema.js";

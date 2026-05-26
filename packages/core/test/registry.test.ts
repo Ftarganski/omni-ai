@@ -22,8 +22,6 @@ describe("provider registry", () => {
   });
 
   it("throws when the provider type has no registered factory", () => {
-    expect(() => createProvider({ name: "x", type: "copilot" } as ProviderConfig)).toThrow(
-      /Unknown provider type/,
-    );
+    expect(() => createProvider({ name: "x", type: "copilot" } as ProviderConfig)).toThrow(/Unknown provider type/);
   });
 });
