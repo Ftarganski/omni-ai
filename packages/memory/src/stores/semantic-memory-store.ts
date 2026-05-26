@@ -39,8 +39,8 @@ export class SemanticMemoryStore implements IMemoryStore {
 
     for (const m of messages) {
       try {
-        const resp = await this.provider.embed!({ input: m.content });
-        cached.push({ content: m.content, vector: resp.embeddings[0] });
+        const resp = await this.provider.embed?.({ input: m.content });
+        if (resp) cached.push({ content: m.content, vector: resp.embeddings[0] });
       } catch {
         // Embedding failure is non-fatal; fall back to inner store search
       }
@@ -57,7 +57,8 @@ export class SemanticMemoryStore implements IMemoryStore {
     }
 
     try {
-      const resp = await this.provider.embed!({ input: query });
+      const resp = await this.provider.embed?.({ input: query });
+      if (!resp) return this.inner.search?.(session, query, topK) ?? [];
       const queryVector = resp.embeddings[0];
       return cached
         .map((e) => ({ content: e.content, score: cosineSimilarity(queryVector, e.vector) }))

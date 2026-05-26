@@ -90,7 +90,7 @@ describe("fromAnthropicResponse", () => {
     } as never;
     const result = fromAnthropicResponse(msg, "anthropic");
     expect(result.toolCalls).toHaveLength(1);
-    expect(result.toolCalls![0]).toEqual({
+    expect(result.toolCalls?.[0]).toEqual({
       id: "tu1",
       name: "read-file",
       arguments: { path: "src/app.ts" },
