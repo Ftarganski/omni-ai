@@ -4,6 +4,8 @@ import type {
   ProviderCapabilities,
   CompletionRequest,
   CompletionResponse,
+  EmbeddingRequest,
+  EmbeddingResponse,
 } from "@omni-ai/core";
 import { toOpenAIMessages, toOpenAITools, fromOpenAIResponse } from "./mappers.js";
 
@@ -11,7 +13,7 @@ export class OpenAIProvider implements IProvider {
   readonly name: string;
   readonly capabilities: ProviderCapabilities = {
     chat: true,
-    embedding: false,
+    embedding: true,
     streaming: true,
     toolUse: true,
     vision: true,
@@ -108,5 +110,16 @@ export class OpenAIProvider implements IProvider {
     });
 
     return fromOpenAIResponse(response, this.name);
+  }
+
+  async embed(request: EmbeddingRequest): Promise<EmbeddingResponse> {
+    const model = request.model ?? "text-embedding-3-small";
+    const input = Array.isArray(request.input) ? request.input : [request.input];
+    const response = await this.client.embeddings.create({ model, input });
+    return {
+      embeddings: response.data.map((d) => d.embedding),
+      model: response.model,
+      provider: this.name,
+    };
   }
 }

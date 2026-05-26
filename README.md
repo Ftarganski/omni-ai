@@ -590,6 +590,52 @@ Iteração 4:  2.100 tokens    → Total: 8.400 tokens  (redução de 68%)
 
 ---
 
+### Busca semântica com embeddings
+
+`SemanticMemoryStore` substitui a busca por palavras-chave (FTS5) por similaridade de coseno usando embeddings do provider.
+
+```typescript
+import { createRuntime } from "@omni-ai/core";
+import { SQLiteMemoryStore, SemanticMemoryStore } from "@omni-ai/memory";
+import { OpenAIProvider } from "@omni-ai/provider-openai";
+
+// Provider com suporte a embeddings (capabilities.embedding = true)
+const embeddingProvider = new OpenAIProvider({ apiKey: process.env.OPENAI_API_KEY! });
+
+// Persiste mensagens no SQLite + busca semântica em memória
+const store = new SemanticMemoryStore(
+  embeddingProvider,
+  new SQLiteMemoryStore({ path: "./sessions.db" })
+);
+
+const runtime = await createRuntime({ skills, memoryStore: store });
+```
+
+**Busca por similaridade:**
+
+```typescript
+const results = await store.search(
+  { resourceId: "user1", threadId: "thread1" },
+  "como foi implementado o módulo de orders?",
+  5 // topK
+);
+// results: [{ content: "...", score: 0.91 }, ...]
+```
+
+**`VectorIndex`** — índice vetorial in-memory para uso direto:
+
+```typescript
+import { VectorIndex } from "@omni-ai/memory";
+
+const index = new VectorIndex<string>();
+index.add("doc1", embeddingVector1);
+index.add("doc2", embeddingVector2);
+
+const results = index.query(queryVector, 3); // [{ id: "doc1", score: 0.94 }, ...]
+```
+
+---
+
 ## Estrutura do repositório
 
 ```
@@ -625,10 +671,12 @@ omni-ai/
 │   │   └── src/
 │   │       ├── stores/
 │   │       │   ├── in-memory.ts       # InMemoryStore (padrão, sem persistência)
-│   │       │   └── sqlite.ts          # SQLiteMemoryStore (arquivo local, FTS5)
+│   │       │   ├── sqlite.ts          # SQLiteMemoryStore (arquivo local, FTS5)
+│   │       │   └── semantic-memory-store.ts  # SemanticMemoryStore (busca por cosine similarity)
 │   │       ├── compactors/
 │   │       │   ├── observation-masking.ts  # Mascara tool results antigos (zero LLM)
 │   │       │   └── summary.ts              # Resumo por LLM (1 chamada por trigger)
+│   │       ├── vector.ts              # VectorIndex + cosineSimilarity
 │   │       └── utils.ts               # estimateTokens() compartilhado
 │   │
 │   ├── skills-fs/                     # @omni-ai/skills-fs
@@ -910,7 +958,7 @@ pnpm build && omni list agents
 - [x] `@omni-ai/skills-fs` — read-file, write-file, list-directory (com proteção path traversal)
 - [x] `@omni-ai/skills-code` — search-code (regex, filtro por extensão, maxResults)
 - [x] `@omni-ai/skills-ux` — audit-accessibility (scan heurístico TSX)
-- [x] `@omni-ai/memory` — InMemoryStore, SQLiteMemoryStore, ObservationMaskingCompactor, SummaryCompactor
+- [x] `@omni-ai/memory` — InMemoryStore, SQLiteMemoryStore, SemanticMemoryStore, VectorIndex, ObservationMaskingCompactor, SummaryCompactor
 - [x] `@omni-ai/cli` — `omni run`, `omni list`, `--session`, `--verbose`, `--output`
 - [x] Bootstrap `createRuntime()` — API de alto nível para uso programático
 - [x] 21 agentes prontos — backend (7), frontend (5), ux (5), qa (4)
@@ -919,7 +967,7 @@ pnpm build && omni list agents
 - [x] Streaming de tokens em tempo real (`omni run ... --stream`, `omni chain ... --stream`)
 - [x] Encadeamento de agentes — output de um agente como input de outro (`omni chain`)
 - [x] `omni init` — wizard interativo para configuração inicial
-- [ ] Suporte a embeddings — `IProvider.embed()` com vetores de contexto
+- [x] Suporte a embeddings — `IProvider.embed()` com vetores de contexto (`SemanticMemoryStore`, `VectorIndex`)
 - [ ] Testes automatizados por pacote
 
 ---
