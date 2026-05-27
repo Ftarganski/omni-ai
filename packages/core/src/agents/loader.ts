@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import YAML from "yaml";
 import type { OmniAiConfig } from "../config/schema.js";
 import { AgentConfigSchema } from "../config/schema.js";
-import { createProvider } from "../providers/registry.js";
+import { buildProvider } from "../providers/registry.js";
 import type { SkillRegistry } from "../skills/registry.js";
 import { Agent } from "./agent.js";
 
@@ -19,7 +19,7 @@ export async function loadAgent(yamlPath: string, config: OmniAiConfig, skills: 
     );
   }
 
-  const provider = createProvider(providerConfig);
+  const provider = buildProvider(providerConfig, config.providers);
   const resolvedSkills = (agentConfig.skills ?? []).map((name) => skills.get(name));
 
   return new Agent(agentConfig, provider, resolvedSkills);

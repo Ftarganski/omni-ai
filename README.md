@@ -1042,9 +1042,9 @@ pnpm build && omni list agents
 - [ ] `omni export` — exporta histórico de sessão em markdown ou JSON
 
 **Providers & resiliência**
-- [ ] `@omni-ai/provider-google` — adapter para Gemini 1.5 / 2.0 (chat, vision, embeddings)
-- [ ] Retry automático com backoff exponencial — recuperação transparente de rate-limit e erros 5xx
-- [ ] Fallback de provider — rota pedidos para um provider secundário quando o primário falha
+- [x] `@omni-ai/provider-google` — adapter para Gemini 1.5 / 2.0 (chat, vision, embeddings)
+- [x] Retry automático com backoff exponencial — recuperação transparente de rate-limit e erros 5xx
+- [x] Fallback de provider — rota pedidos para um provider secundário quando o primário falha
 
 **Skills**
 - [x] `@omni-ai/skills-git` — git status, diff, log, commit message (para agentes de review e release)

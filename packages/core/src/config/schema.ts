@@ -1,8 +1,14 @@
 import { z } from "zod";
 
+export const RetryConfigSchema = z.object({
+  maxRetries: z.number().int().positive().default(3),
+  initialDelayMs: z.number().int().positive().default(500),
+  maxDelayMs: z.number().int().positive().default(30_000),
+});
+
 export const ProviderConfigSchema = z.object({
   name: z.string(),
-  type: z.enum(["anthropic", "openai", "copilot", "custom"]),
+  type: z.enum(["anthropic", "openai", "copilot", "google", "custom"]),
   // nullish handles YAML empty value (parsed as null) and absent key (undefined)
   apiKey: z
     .string()
@@ -18,6 +24,8 @@ export const ProviderConfigSchema = z.object({
     .nullish()
     .transform((v) => v ?? undefined),
   options: z.record(z.unknown()).optional(),
+  retry: RetryConfigSchema.optional(),
+  fallback: z.string().optional(),
 });
 
 export const AgentConfigSchema = z.object({
@@ -46,6 +54,7 @@ export const OmniAiConfigSchema = z.object({
   agents: z.array(AgentConfigSchema).optional(),
 });
 
+export type RetryConfig = z.infer<typeof RetryConfigSchema>;
 export type ProviderConfig = z.infer<typeof ProviderConfigSchema>;
 export type OmniAiConfig = z.infer<typeof OmniAiConfigSchema>;
 export type ScaffoldPaths = z.infer<typeof ScaffoldPathsSchema>;

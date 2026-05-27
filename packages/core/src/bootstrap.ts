@@ -6,7 +6,7 @@ import { Agent } from "./agents/agent.js";
 import { loadAgent } from "./agents/loader.js";
 import { loadConfig } from "./config/loader.js";
 import type { OmniAiConfig } from "./config/schema.js";
-import { createProvider } from "./providers/registry.js";
+import { buildProvider } from "./providers/registry.js";
 import { SkillRegistry } from "./skills/registry.js";
 import type { AgentRunOptions, AgentRunResult, IMemoryStore, ISkill } from "./types.js";
 
@@ -53,7 +53,7 @@ export async function createRuntime(options?: {
       if (!providerConfig) {
         throw new Error(`Provider "${providerName}" not found in config for agent "${nameOrPath}"`);
       }
-      const provider = createProvider(providerConfig);
+      const provider = buildProvider(providerConfig, config.providers);
       const resolvedSkills = (inlineCfg.skills ?? []).map((n) => skills.get(n));
       return new Agent(inlineCfg, provider, resolvedSkills);
     }
