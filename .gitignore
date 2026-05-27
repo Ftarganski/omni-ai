@@ -56,6 +56,9 @@ Desktop.ini
 # Keep .vscode/extensions.json and .vscode/launch.json but ignore settings with secrets
 .vscode/settings.json
 
+# ── Claude Code ───────────────────────────────────────────────────────────────
+.claude/settings.local.json
+
 # ── Temporary ─────────────────────────────────────────────────────────────────
 tmp/
 temp/
