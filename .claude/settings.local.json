@@ -46,7 +46,15 @@
       "Bash(Select-Object Name, Mode)",
       "Bash(Get-ChildItem -Path \"e:\\\\Desenvolvedor Full Stack\\\\Works\\\\omni-ai\" -Directory)",
       "Bash(Get-ChildItem -Recurse -Directory -Name)",
-      "Bash(Select-Object -First 30)"
+      "Bash(Select-Object -First 30)",
+      "PowerShell(cd \"e:\\\\Desenvolvedor Full Stack\\\\Works\\\\omni-ai\"; git show HEAD:packages/core/src/agents/agent.ts | Select-Object -First 3 | ForEach-Object { $_ + \" [len=\" + $_.Length + \"]\" })",
+      "PowerShell(ls \"e:\\\\Desenvolvedor Full Stack\\\\Works\\\\omni-ai\\\\packages\\\\skills-fs\\\\\")",
+      "Bash(cd \"e:\\\\Desenvolvedor Full Stack\\\\Works\\\\droz-claude\" && pwd)",
+      "Read(//e/Desenvolvedor Full Stack/Works/droz-claude/**)",
+      "Bash(cd \"e:\\\\Desenvolvedor Full Stack\\\\Works\" && ls -d droz* chatbot* 2>/dev/null | head -10)",
+      "Read(//e/Desenvolvedor Full Stack/Works/**)",
+      "Bash(xargs grep -l \"routing\\\\|message\")",
+      "Bash(findstr /i \"mcp\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\conta\\.claude\\projects\\e--Desenvolvedor-Full-Stack-Works-omni-ai\\memory",
