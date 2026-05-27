@@ -18,6 +18,7 @@
   "dependencies": {
     "@omni-ai/core": "workspace:*",
     "@omni-ai/provider-anthropic": "workspace:*",
+    "@omni-ai/provider-google": "workspace:*",
     "@omni-ai/provider-openai": "workspace:*",
     "@omni-ai/skills": "workspace:*",
     "@omni-ai/memory": "workspace:*",

@@ -1,0 +1,30 @@
+{
+  "name": "@omni-ai/provider-google",
+  "version": "0.1.0",
+  "description": "Google Gemini provider adapter for omni-ai",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "biome check src/ test/",
+    "format": "biome check --write src/ test/"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "@omni-ai/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}
