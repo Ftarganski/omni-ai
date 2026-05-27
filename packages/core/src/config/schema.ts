@@ -8,7 +8,7 @@ export const RetryConfigSchema = z.object({
 
 export const ProviderConfigSchema = z.object({
   name: z.string(),
-  type: z.enum(["anthropic", "openai", "copilot", "google", "custom"]),
+  type: z.enum(["anthropic", "openai", "copilot", "google", "groq", "ollama", "custom"]),
   // nullish handles YAML empty value (parsed as null) and absent key (undefined)
   apiKey: z
     .string()
