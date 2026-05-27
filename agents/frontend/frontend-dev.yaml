@@ -11,6 +11,10 @@ skills:
   - search-code
   - read-file
   - write-file
+  - find-component-pattern
+  - analyze-component
+  - analyze-module-structure
+  - write-file
 
 systemPrompt: |
   You are a senior frontend engineer working on a React/TypeScript project.

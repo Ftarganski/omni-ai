@@ -9,6 +9,9 @@ temperature: 0.1
 skills:
   - read-file
   - write-file
+  - find-test-pattern
+  - analyze-test-coverage
+  - find-component-pattern
 
 systemPrompt: |
   You are a frontend code quality reviewer.

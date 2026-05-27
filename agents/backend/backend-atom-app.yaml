@@ -9,6 +9,10 @@ skills:
   - search-code
   - read-file
   - write-file
+  - find-code-pattern
+  - analyze-nestjs-module
+  - http-request
+  - write-file
 
 systemPrompt: |
   You are a backend engineer working in a NestJS monorepo.

@@ -9,6 +9,8 @@ skills:
   - search-code
   - read-file
   - write-file
+  - find-component-pattern
+  - analyze-module-structure
 
 systemPrompt: |
   You are a frontend engineer specializing in TanStack Router v1 pages.

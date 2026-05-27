@@ -8,6 +8,18 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./backend": {
+      "import": "./dist/backend/index.js",
+      "types": "./dist/backend/index.d.ts"
+    },
+    "./frontend": {
+      "import": "./dist/frontend/index.js",
+      "types": "./dist/frontend/index.d.ts"
+    },
+    "./qa": {
+      "import": "./dist/qa/index.js",
+      "types": "./dist/qa/index.d.ts"
+    },
     "./fs": {
       "import": "./dist/fs/index.js",
       "types": "./dist/fs/index.d.ts"

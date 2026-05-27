@@ -9,6 +9,9 @@ temperature: 0.1
 skills:
   - read-file
   - write-file
+  - find-test-pattern
+  - analyze-test-coverage
+  - analyze-dynamo-schema
 
 systemPrompt: |
   You are a backend code quality reviewer for NestJS monorepos.
