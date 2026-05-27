@@ -4,10 +4,10 @@ import type { ISkill } from "@omni-ai/core";
 import { z } from "zod";
 
 const patternFilters: Record<string, (name: string) => boolean> = {
-  service: name => name.endsWith(".service.spec.ts"),
-  component: name => /^[A-Z]/.test(name) && (name.endsWith(".spec.ts") || name.endsWith(".spec.tsx")),
-  hook: name => name.startsWith("use") && (name.endsWith(".spec.ts") || name.endsWith(".spec.tsx")),
-  resolver: name => name.endsWith(".resolver.spec.ts"),
+  service: (name) => name.endsWith(".service.spec.ts"),
+  component: (name) => /^[A-Z]/.test(name) && (name.endsWith(".spec.ts") || name.endsWith(".spec.tsx")),
+  hook: (name) => name.startsWith("use") && (name.endsWith(".spec.ts") || name.endsWith(".spec.tsx")),
+  resolver: (name) => name.endsWith(".resolver.spec.ts"),
 };
 
 const InputSchema = z.object({
@@ -32,12 +32,8 @@ async function walkForTests(
   max: number
 ): Promise<void> {
   if (results.length >= max) return;
-  let entries;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return;
-  }
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => null);
+  if (!entries) return;
   for (const entry of entries) {
     if (results.length >= max) break;
     if (entry.name === "node_modules" || entry.name === "dist" || entry.name === ".git") continue;

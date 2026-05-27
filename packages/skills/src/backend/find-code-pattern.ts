@@ -34,19 +34,15 @@ async function walkForPattern(
   max: number
 ): Promise<void> {
   if (results.length >= max) return;
-  let entries;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return;
-  }
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => null);
+  if (!entries) return;
   for (const entry of entries) {
     if (results.length >= max) break;
     if (entry.name === "node_modules" || entry.name === "dist" || entry.name === ".git") continue;
     const fullPath = join(dir, entry.name);
     if (entry.isDirectory()) {
       await walkForPattern(fullPath, suffixes, results, max);
-    } else if (entry.isFile() && suffixes.some(s => entry.name.endsWith(s))) {
+    } else if (entry.isFile() && suffixes.some((s) => entry.name.endsWith(s))) {
       const content = await readFile(fullPath, "utf-8");
       results.push({ file: fullPath, content });
     }

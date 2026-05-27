@@ -44,11 +44,9 @@ function extractFields(source: string): SchemaField[] {
   if (!fieldsMatch) return [];
 
   const fieldsBlock = fieldsMatch[1];
-  const fieldRe = /(\w+)\s*:\s*\{([^}]*)\}/g;
   const fields: SchemaField[] = [];
-  let m: RegExpExecArray | null;
 
-  while ((m = fieldRe.exec(fieldsBlock)) !== null) {
+  for (const m of fieldsBlock.matchAll(/(\w+)\s*:\s*\{([^}]*)\}/g)) {
     const body = m[2];
     const typeMatch = /type\s*:\s*['"]?(\w+)['"]?/.exec(body);
     const requiredMatch = /required\s*:\s*(true|false)/.exec(body);
@@ -63,14 +61,11 @@ function extractFields(source: string): SchemaField[] {
 }
 
 function extractEnums(source: string): SchemaEnum[] {
-  const enumRe = /export\s+(?:const\s+)?enum\s+(\w+)\s*\{([^}]*)\}/g;
   const enums: SchemaEnum[] = [];
-  let m: RegExpExecArray | null;
-
-  while ((m = enumRe.exec(source)) !== null) {
+  for (const m of source.matchAll(/export\s+(?:const\s+)?enum\s+(\w+)\s*\{([^}]*)\}/g)) {
     const values = m[2]
       .split(",")
-      .map(v => v.trim().split("=")[0].trim())
+      .map((v) => v.trim().split("=")[0].trim())
       .filter(Boolean);
     enums.push({ name: m[1], values });
   }

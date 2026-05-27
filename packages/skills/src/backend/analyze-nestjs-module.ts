@@ -23,7 +23,12 @@ function extractArrayItems(source: string, key: string): string[] {
   if (!match) return [];
   return match[1]
     .split(",")
-    .map(s => s.trim().replace(/\/\/.*$/m, "").trim())
+    .map((s) =>
+      s
+        .trim()
+        .replace(/\/\/.*$/m, "")
+        .trim()
+    )
     .filter(Boolean);
 }
 

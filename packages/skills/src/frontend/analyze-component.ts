@@ -38,11 +38,7 @@ function extractHooksUsed(source: string): string[] {
 }
 
 function extractNamedExports(source: string): string[] {
-  const exportRe = /export\s+(?:const|function|class|type|interface|enum)\s+(\w+)/g;
-  const names: string[] = [];
-  let m: RegExpExecArray | null;
-  while ((m = exportRe.exec(source)) !== null) names.push(m[1]);
-  return names;
+  return [...source.matchAll(/export\s+(?:const|function|class|type|interface|enum)\s+(\w+)/g)].map((m) => m[1]);
 }
 
 export const analyzeComponentSkill: ISkill<AnalyzeComponentInput, ComponentAnalysis> = {

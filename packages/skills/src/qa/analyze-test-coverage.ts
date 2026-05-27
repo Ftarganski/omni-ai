@@ -5,10 +5,7 @@ import { z } from "zod";
 
 const InputSchema = z.object({
   directory: z.string().describe("Root directory to scan for source files and their tests"),
-  extensions: z
-    .array(z.string())
-    .default([".ts", ".tsx"])
-    .describe("Source file extensions to check"),
+  extensions: z.array(z.string()).default([".ts", ".tsx"]).describe("Source file extensions to check"),
   ignorePatterns: z
     .array(z.string())
     .default(["index.ts", "index.tsx", ".spec.", ".test.", ".d.ts", ".module.ts"])
@@ -24,12 +21,8 @@ export interface TestCoverageAnalysis {
 }
 
 async function collectFiles(dir: string, exts: string[], ignore: string[]): Promise<string[]> {
-  let entries;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return [];
-  }
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => null);
+  if (!entries) return [];
   const files: string[] = [];
   for (const entry of entries) {
     if (entry.name === "node_modules" || entry.name === "dist" || entry.name === ".git") continue;
@@ -38,8 +31,8 @@ async function collectFiles(dir: string, exts: string[], ignore: string[]): Prom
       files.push(...(await collectFiles(fullPath, exts, ignore)));
     } else if (
       entry.isFile() &&
-      exts.some(e => entry.name.endsWith(e)) &&
-      !ignore.some(p => entry.name.includes(p) || fullPath.includes(p))
+      exts.some((e) => entry.name.endsWith(e)) &&
+      !ignore.some((p) => entry.name.includes(p) || fullPath.includes(p))
     ) {
       files.push(fullPath);
     }
@@ -72,7 +65,7 @@ export const analyzeTestCoverageSkill: ISkill<AnalyzeTestCoverageInput, TestCove
     const uncovered: string[] = [];
 
     for (const file of sourceFiles) {
-      const hasSpec = specPathCandidates(file).some(s => allFiles.has(s));
+      const hasSpec = specPathCandidates(file).some((s) => allFiles.has(s));
       if (hasSpec) covered.push(file);
       else uncovered.push(file);
     }

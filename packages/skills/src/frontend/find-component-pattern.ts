@@ -4,27 +4,16 @@ import type { ISkill } from "@omni-ai/core";
 import { z } from "zod";
 
 const patternFilters: Record<string, (name: string) => boolean> = {
-  component: name =>
-    /^[A-Z]/.test(name) &&
-    (name.endsWith(".tsx") || name.endsWith(".ts")) &&
-    !name.includes(".spec."),
-  hook: name =>
-    name.startsWith("use") &&
-    (name.endsWith(".ts") || name.endsWith(".tsx")) &&
-    !name.includes(".spec."),
-  page: name =>
-    /page|route/i.test(name) &&
-    (name.endsWith(".tsx") || name.endsWith(".ts")) &&
-    !name.includes(".spec."),
-  module: name =>
-    (name === "index.ts" || name === "index.tsx" || /module/i.test(name)) &&
-    !name.includes(".spec."),
+  component: (name) =>
+    /^[A-Z]/.test(name) && (name.endsWith(".tsx") || name.endsWith(".ts")) && !name.includes(".spec."),
+  hook: (name) => name.startsWith("use") && (name.endsWith(".ts") || name.endsWith(".tsx")) && !name.includes(".spec."),
+  page: (name) =>
+    /page|route/i.test(name) && (name.endsWith(".tsx") || name.endsWith(".ts")) && !name.includes(".spec."),
+  module: (name) => (name === "index.ts" || name === "index.tsx" || /module/i.test(name)) && !name.includes(".spec."),
 };
 
 const InputSchema = z.object({
-  patternType: z
-    .enum(["component", "hook", "page", "module"])
-    .describe("Type of React pattern to find examples of"),
+  patternType: z.enum(["component", "hook", "page", "module"]).describe("Type of React pattern to find examples of"),
   directory: z.string().describe("Root directory to search in"),
   maxExamples: z.number().int().positive().default(3).describe("Maximum number of examples to return"),
 });
@@ -43,12 +32,8 @@ async function walkForComponent(
   max: number
 ): Promise<void> {
   if (results.length >= max) return;
-  let entries;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return;
-  }
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => null);
+  if (!entries) return;
   for (const entry of entries) {
     if (results.length >= max) break;
     if (entry.name === "node_modules" || entry.name === "dist" || entry.name === ".git") continue;

@@ -18,12 +18,8 @@ export interface ModuleStructure {
 }
 
 async function collectFiles(dir: string): Promise<string[]> {
-  let entries;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return [];
-  }
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => null);
+  if (!entries) return [];
   const files: string[] = [];
   for (const entry of entries) {
     if (entry.name === "node_modules" || entry.name === "dist") continue;
