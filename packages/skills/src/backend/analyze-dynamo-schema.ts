@@ -40,10 +40,24 @@ function extractEntityType(source: string): string {
 }
 
 function extractFields(source: string): SchemaField[] {
-  const fieldsMatch = /defineSchema\s*\(\s*\{[\s\S]*?fields\s*:\s*\{([\s\S]*?)\}\s*\}\s*\)/.exec(source);
-  if (!fieldsMatch) return [];
-
-  const fieldsBlock = fieldsMatch[1];
+  const fieldsKeyIdx = source.indexOf("fields:");
+  if (fieldsKeyIdx === -1) return [];
+  const braceOpen = source.indexOf("{", fieldsKeyIdx);
+  if (braceOpen === -1) return [];
+  let depth = 0;
+  let fieldsEnd = -1;
+  for (let i = braceOpen; i < source.length; i++) {
+    if (source[i] === "{") depth++;
+    else if (source[i] === "}") {
+      depth--;
+      if (depth === 0) {
+        fieldsEnd = i;
+        break;
+      }
+    }
+  }
+  if (fieldsEnd === -1) return [];
+  const fieldsBlock = source.slice(braceOpen + 1, fieldsEnd);
   const fields: SchemaField[] = [];
 
   for (const m of fieldsBlock.matchAll(/(\w+)\s*:\s*\{([^}]*)\}/g)) {
