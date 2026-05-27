@@ -1035,7 +1035,7 @@ pnpm build && omni list agents
 ### Próximos passos
 
 **CLI & DX**
-- [ ] `omni new` — scaffold interativo para criar agente, skill ou provider a partir de template
+- [x] `omni new` — scaffold interativo para criar agente, skill ou provider a partir de template
 - [ ] `omni eval` — avaliação em lote: roda agente contra dataset de `(input, expected)` e reporta acurácia
 - [ ] `omni serve` — inicia servidor HTTP local para chamar agentes via REST ou SSE (sem CLI)
 - [ ] `omni watch` — reexecuta agente automaticamente quando arquivos do projeto mudam (modo dev)
