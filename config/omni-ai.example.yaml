@@ -23,6 +23,14 @@ providers:
     baseUrl: https://api.githubcopilot.com
     defaultModel: gpt-4o
 
+# ── Scaffold paths (omni new) ─────────────────────────────────────────────────
+# Where "omni new" creates files — paths are relative to the directory where you run omni
+# Defaults shown below — uncomment and edit to match your project layout:
+# scaffoldPaths:
+#   agents: agents          # omni new agent    → agents/<domain>/<name>.yaml
+#   skills: src/skills      # omni new skill    → src/skills/<domain>/<name>.ts
+#   providers: packages     # omni new provider → packages/provider-<name>/
+
 # ── Inheritance rules ────────────────────────────────────────────────────────
 # agent.provider missing  →  uses defaultProvider above
 # agent.model missing     →  uses defaultModel of the resolved provider
