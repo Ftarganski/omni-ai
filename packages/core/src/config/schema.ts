@@ -31,13 +31,21 @@ export const AgentConfigSchema = z.object({
   temperature: z.number().min(0).max(2).optional(),
 });
 
+export const ScaffoldPathsSchema = z.object({
+  agents: z.string().default("agents"),
+  skills: z.string().default("src/skills"),
+  providers: z.string().default("packages"),
+});
+
 export const OmniAiConfigSchema = z.object({
   version: z.string().default("1"),
   providers: z.array(ProviderConfigSchema).min(1, "At least one provider must be configured"),
   defaultProvider: z.string(),
   agentsDir: z.string().default("agents"),
+  scaffoldPaths: ScaffoldPathsSchema.optional(),
   agents: z.array(AgentConfigSchema).optional(),
 });
 
 export type ProviderConfig = z.infer<typeof ProviderConfigSchema>;
 export type OmniAiConfig = z.infer<typeof OmniAiConfigSchema>;
+export type ScaffoldPaths = z.infer<typeof ScaffoldPathsSchema>;

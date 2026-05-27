@@ -6,6 +6,7 @@ import { config as loadDotenv } from "dotenv";
 import { chainCommand } from "./commands/chain.js";
 import { initCommand } from "./commands/init.js";
 import { listCommand } from "./commands/list.js";
+import { newCommand } from "./commands/new.js";
 import { runCommand } from "./commands/run.js";
 
 // Load .env from the omni-ai repo root (4 levels up from packages/cli/dist/)
@@ -31,6 +32,8 @@ program
   .command("init")
   .description("Interactive setup wizard — creates omni-ai.yaml and configures .env")
   .action(initCommand);
+
+program.command("new").description("Scaffold a new agent, skill or provider from a template").action(newCommand);
 
 program
   .command("chain <prompt> <agents...>")
