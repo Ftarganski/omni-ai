@@ -26,3 +26,25 @@ registerProvider("copilot", (config) => {
     name: config.name,
   });
 });
+
+registerProvider("groq", (config) => {
+  if (!config.apiKey) {
+    throw new Error(`Provider "${config.name}" (groq) requires GROQ_API_KEY to be set in the environment.`);
+  }
+  return new OpenAIProvider({
+    apiKey: config.apiKey,
+    defaultModel: config.defaultModel ?? "llama-3.3-70b-versatile",
+    baseUrl: config.baseUrl ?? "https://api.groq.com/openai/v1",
+    name: config.name,
+  });
+});
+
+registerProvider("ollama", (config) => {
+  return new OpenAIProvider({
+    // Ollama does not require an API key; use a placeholder so the SDK does not complain
+    apiKey: config.apiKey ?? "ollama",
+    defaultModel: config.defaultModel ?? "llama3.2",
+    baseUrl: config.baseUrl ?? "http://localhost:11434/v1",
+    name: config.name,
+  });
+});

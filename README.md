@@ -1043,6 +1043,8 @@ pnpm build && omni list agents
 
 **Providers & resiliência**
 - [x] `@omni-ai/provider-google` — adapter para Gemini 1.5 / 2.0 (chat, vision, embeddings)
+- [x] Suporte a Groq — modelos Llama/DeepSeek via LPU (free tier, sem cartão)
+- [x] Suporte a Ollama — modelos locais sem API key (Llama, Qwen, Phi, DeepSeek)
 - [x] Retry automático com backoff exponencial — recuperação transparente de rate-limit e erros 5xx
 - [x] Fallback de provider — rota pedidos para um provider secundário quando o primário falha
 
