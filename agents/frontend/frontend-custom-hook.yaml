@@ -8,6 +8,7 @@ skills:
   - search-code
   - read-file
   - write-file
+  - find-component-pattern
 
 systemPrompt: |
   You are a frontend engineer specializing in React custom hooks.

@@ -12,6 +12,7 @@ skills:
   - read-file
   - audit-accessibility
   - write-file
+  - analyze-image
 
 systemPrompt: |
   You are a Lead UX Engineer and CX advocate.

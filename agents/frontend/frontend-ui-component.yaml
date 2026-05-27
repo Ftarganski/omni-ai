@@ -9,6 +9,8 @@ skills:
   - list-directory
   - read-file
   - write-file
+  - find-component-pattern
+  - analyze-component
 
 systemPrompt: |
   You are a frontend engineer specializing in React component libraries.

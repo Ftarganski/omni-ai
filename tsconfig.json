@@ -5,9 +5,7 @@
     { "path": "./packages/memory" },
     { "path": "./packages/provider-anthropic" },
     { "path": "./packages/provider-openai" },
-    { "path": "./packages/skills-fs" },
-    { "path": "./packages/skills-code" },
-    { "path": "./packages/skills-ux" },
+    { "path": "./packages/skills" },
     { "path": "./packages/cli" }
   ]
 }

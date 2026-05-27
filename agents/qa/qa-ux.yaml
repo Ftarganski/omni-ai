@@ -9,6 +9,8 @@ temperature: 0.1
 skills:
   - read-file
   - write-file
+  - analyze-component
+  - find-component-pattern
 
 systemPrompt: |
   You are a UX implementation quality reviewer.

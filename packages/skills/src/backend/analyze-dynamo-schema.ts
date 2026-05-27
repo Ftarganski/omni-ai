@@ -1,0 +1,111 @@
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import type { ISkill } from "@omni-ai/core";
+import { z } from "zod";
+
+const InputSchema = z.object({
+  path: z.string().describe("Path to the *.model.ts file containing the OneTable schema"),
+});
+
+export type AnalyzeDynamoSchemaInput = z.infer<typeof InputSchema>;
+
+export interface SchemaField {
+  name: string;
+  type: string;
+  required: boolean;
+  isEnum: boolean;
+}
+
+export interface SchemaEnum {
+  name: string;
+  values: string[];
+}
+
+export interface DynamoSchemaAnalysis {
+  schemaName: string;
+  entityType: string;
+  fields: SchemaField[];
+  enums: SchemaEnum[];
+  typenames: string[];
+}
+
+function extractSchemaName(source: string): string {
+  const match = /export\s+const\s+(\w+Schema)\s*=/.exec(source);
+  return match?.[1] ?? "UnknownSchema";
+}
+
+function extractEntityType(source: string): string {
+  const match = /export\s+type\s+(\w+)\s*=\s*Entity</.exec(source);
+  return match?.[1] ?? "UnknownEntity";
+}
+
+function extractFields(source: string): SchemaField[] {
+  const fieldsKeyIdx = source.indexOf("fields:");
+  if (fieldsKeyIdx === -1) return [];
+  const braceOpen = source.indexOf("{", fieldsKeyIdx);
+  if (braceOpen === -1) return [];
+  let depth = 0;
+  let fieldsEnd = -1;
+  for (let i = braceOpen; i < source.length; i++) {
+    if (source[i] === "{") depth++;
+    else if (source[i] === "}") {
+      depth--;
+      if (depth === 0) {
+        fieldsEnd = i;
+        break;
+      }
+    }
+  }
+  if (fieldsEnd === -1) return [];
+  const fieldsBlock = source.slice(braceOpen + 1, fieldsEnd);
+  const fields: SchemaField[] = [];
+
+  for (const m of fieldsBlock.matchAll(/(\w+)\s*:\s*\{([^}]*)\}/g)) {
+    const body = m[2];
+    const typeMatch = /type\s*:\s*['"]?(\w+)['"]?/.exec(body);
+    const requiredMatch = /required\s*:\s*(true|false)/.exec(body);
+    fields.push({
+      name: m[1],
+      type: typeMatch?.[1] ?? "unknown",
+      required: requiredMatch?.[1] === "true",
+      isEnum: /enum\s*:\s*\w+/.test(body),
+    });
+  }
+  return fields;
+}
+
+function extractEnums(source: string): SchemaEnum[] {
+  const enums: SchemaEnum[] = [];
+  for (const m of source.matchAll(/export\s+(?:const\s+)?enum\s+(\w+)\s*\{([^}]*)\}/g)) {
+    const values = m[2]
+      .split(",")
+      .map((v) => v.trim().split("=")[0].trim())
+      .filter(Boolean);
+    enums.push({ name: m[1], values });
+  }
+  return enums;
+}
+
+function extractTypenames(source: string): string[] {
+  const matches = source.match(/Typenames\.\w+/g) ?? [];
+  return [...new Set(matches)];
+}
+
+export const analyzeDynamoSchemaSkill: ISkill<AnalyzeDynamoSchemaInput, DynamoSchemaAnalysis> = {
+  name: "analyze-dynamo-schema",
+  description:
+    "Parse a OneTable *.model.ts file and extract the schema name, entity type, fields (with types and required flags), enums, and Typenames references. " +
+    "Use this before generating a service to understand the exact entity shape.",
+
+  async execute(input: AnalyzeDynamoSchemaInput): Promise<DynamoSchemaAnalysis> {
+    const { path } = InputSchema.parse(input);
+    const source = await readFile(resolve(path), "utf-8");
+    return {
+      schemaName: extractSchemaName(source),
+      entityType: extractEntityType(source),
+      fields: extractFields(source),
+      enums: extractEnums(source),
+      typenames: extractTypenames(source),
+    };
+  },
+};
