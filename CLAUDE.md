@@ -32,7 +32,7 @@ pnpm build            # build all packages
 pnpm typecheck        # type-check all packages
 pnpm test             # run all tests
 git status            # check what changed
-git push origin master
+git push origin main
 ```
 
 ## Critical rules — always follow
