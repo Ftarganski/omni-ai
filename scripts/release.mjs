@@ -38,8 +38,11 @@ if (dirty) {
   process.exit(1);
 }
 
-// Pull latest
-execSync("git pull --ff-only", { stdio: "inherit" });
+// Pull latest if branch has a remote tracking ref
+try {
+  execSync("git rev-parse --abbrev-ref @{u}", { stdio: "pipe" });
+  execSync("git pull --ff-only", { stdio: "inherit" });
+} catch { /* no upstream configured — skip pull */ }
 
 // Bump version in package.json (ephemeral — not committed back)
 const prev = pkg.version;
