@@ -17,8 +17,7 @@ export class McpSkill implements ISkill {
   }
 
   async execute(input: unknown, _ctx: SkillContext): Promise<unknown> {
-    const args =
-      typeof input === "object" && input !== null ? (input as Record<string, unknown>) : { input };
+    const args = typeof input === "object" && input !== null ? (input as Record<string, unknown>) : { input };
 
     const result = await this.client.callTool({ name: this.name, arguments: args });
 

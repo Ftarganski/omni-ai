@@ -1,7 +1,7 @@
-import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { describe, expect, it } from "vitest";
+import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import type { ISkill, SkillContext } from "@omni-ai/core";
+import { describe, expect, it } from "vitest";
 import { createMcpServer } from "../src/server.js";
 import { connectMcpSkills, McpSkill } from "../src/skill.js";
 
