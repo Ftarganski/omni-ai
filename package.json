@@ -14,7 +14,7 @@
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "omni": "node packages/cli/dist/bin.js"
+    "omni": "node packages/omni-ai/dist/cli/bin.js"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
