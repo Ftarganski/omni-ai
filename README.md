@@ -238,6 +238,152 @@ O wizard irá:
 
 ---
 
+### `omni serve`
+
+Inicia um servidor HTTP local para executar agentes via REST ou SSE.
+
+```
+omni serve [opções]
+```
+
+| Opção | Tipo | Descrição |
+|-------|------|-----------|
+| `--port <number>` | number | Porta (padrão: 3000) |
+| `--config <path>` | string | Caminho para `omni-ai.yaml` |
+
+**Endpoints:**
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET` | `/health` | Status do servidor e versão |
+| `GET` | `/agents` | Lista todos os agentes disponíveis |
+| `POST` | `/run` | Executa um agente (JSON response) |
+| `POST` | `/run/stream` | Executa um agente com streaming SSE |
+
+```bash
+# Iniciar o servidor
+omni serve --port 4000
+
+# Executar um agente via API
+curl -X POST http://localhost:3000/run \
+  -H "Content-Type: application/json" \
+  -d '{"agent": "backend-dev", "prompt": "liste os endpoints do módulo de orders"}'
+
+# Com sessão
+curl -X POST http://localhost:3000/run \
+  -d '{"agent": "backend-dev", "prompt": "continue o módulo de customers", "session": "dev1:customers"}'
+```
+
+---
+
+### `omni watch`
+
+Reexecuta um agente automaticamente quando arquivos do projeto mudam.
+
+```
+omni watch <agent> "<prompt>" [opções]
+```
+
+| Opção | Tipo | Descrição |
+|-------|------|-----------|
+| `--config <path>` | string | Caminho para `omni-ai.yaml` |
+| `--glob <pattern>` | string | Glob dos arquivos a observar (padrão: `src/**/*.{ts,js,yaml,json}`) |
+| `--debounce <ms>` | number | Delay de debounce em ms (padrão: 500) |
+| `--stream` | flag | Transmite tokens em tempo real |
+
+```bash
+# Reexecuta qa-backend sempre que um .ts muda
+omni watch qa-backend "valide os arquivos modificados" --glob "src/**/*.ts"
+```
+
+---
+
+### `omni eval`
+
+Avalia um agente contra um dataset de pares `(input, expected)`.
+
+```
+omni eval <agent> <dataset.json> [opções]
+```
+
+| Opção | Tipo | Descrição |
+|-------|------|-----------|
+| `--config <path>` | string | Caminho para `omni-ai.yaml` |
+| `--concurrency <n>` | number | Avaliações paralelas (padrão: 3) |
+| `--output <file>` | string | Salva relatório JSON em arquivo |
+
+**Formato do dataset:**
+
+```json
+[
+  { "input": "qual é a capital do Brasil?", "expected": "Brasília" },
+  { "input": "o que é TypeScript?", "expected": "superset tipado de JavaScript" }
+]
+```
+
+**Saída:**
+
+```
+◆ omni eval  agent: backend-dev  dataset: qa.json
+
+  ✓ q1  exact
+  ✓ q2  contains
+  ✗ q3  miss
+
+  Score: 2/3 (66.7%)
+```
+
+---
+
+### `omni export`
+
+Exporta o histórico de uma sessão como Markdown ou JSON.
+
+```
+omni export <sessionId> [opções]
+```
+
+| Opção | Tipo | Descrição |
+|-------|------|-----------|
+| `--format <format>` | `markdown` \| `json` | Formato de saída (padrão: `markdown`) |
+| `--output <file>` | string | Salva em arquivo em vez de stdout |
+| `--limit <n>` | number | Limita às últimas N mensagens |
+
+```bash
+# Exportar sessão como Markdown
+omni export dev1:customers
+
+# Exportar como JSON para arquivo
+omni export dev1:customers --format json --output session.json
+```
+
+---
+
+### `omni mcp serve`
+
+Expõe todas as skills registradas como ferramentas MCP sobre stdio. Permite que clientes MCP (como Claude Desktop) chamem as skills diretamente.
+
+```bash
+omni mcp serve
+```
+
+O servidor usa o transporte **stdio** — adequado para ser iniciado como subprocesso por um cliente MCP.
+
+**Configuração no Claude Desktop (`claude_desktop_config.json`):**
+
+```json
+{
+  "mcpServers": {
+    "omni-ai": {
+      "command": "omni",
+      "args": ["mcp", "serve"]
+    }
+  }
+}
+```
+
+---
+
 ## Providers
 
 ### GitHub Copilot (recomendado para usuários GitHub)
@@ -337,27 +483,85 @@ Como obter: [platform.openai.com](https://platform.openai.com) → API keys
 
 ---
 
-### Custom / self-hosted (Ollama, Groq, Azure, vLLM...)
-
-Qualquer endpoint compatível com a API OpenAI de chat completions:
+### Google Gemini
 
 ```bash
 # .env
-CUSTOM_LLM_BASE_URL=http://localhost:11434/v1   # Ollama
-CUSTOM_LLM_API_KEY=                              # Vazio para Ollama
+GOOGLE_API_KEY=AIza...
+```
+
+```yaml
+# config/omni-ai.yaml
+defaultProvider: google
+
+providers:
+  - name: google
+    type: google
+    apiKey: ${GOOGLE_API_KEY}
+    defaultModel: gemini-2.0-flash
+```
+
+Como obter: [aistudio.google.com](https://aistudio.google.com) → Get API key
+
+**Modelos disponíveis:**
+
+| Modelo | ID | Uso recomendado |
+|--------|----|-----------------|
+| Gemini 2.0 Flash | `gemini-2.0-flash` | Rápido, multimodal, custo baixo ✓ |
+| Gemini 1.5 Pro | `gemini-1.5-pro` | Contexto longo (1M tokens) |
+
+---
+
+### Groq (inferência ultrarrápida)
+
+```bash
+# .env
+GROQ_API_KEY=gsk_...
 ```
 
 ```yaml
 # config/omni-ai.yaml
 providers:
-  - name: ollama
-    type: custom
-    baseUrl: ${CUSTOM_LLM_BASE_URL}
-    apiKey: ${CUSTOM_LLM_API_KEY}
-    defaultModel: llama3.2
+  - name: groq
+    type: groq
+    apiKey: ${GROQ_API_KEY}
+    defaultModel: llama-3.3-70b-versatile
 ```
 
-Endpoints compatíveis: **Ollama**, **LM Studio**, **vLLM**, **Groq**, **Together AI**, **Azure OpenAI**, **Mistral AI**, **Perplexity**.
+Como obter: [console.groq.com](https://console.groq.com) → API Keys
+
+---
+
+### Ollama (local / self-hosted)
+
+```yaml
+# config/omni-ai.yaml
+providers:
+  - name: ollama
+    type: ollama
+    defaultModel: llama3.2
+    # baseUrl padrão: http://localhost:11434/v1
+```
+
+Não requer API key. Requer [Ollama](https://ollama.com) em execução local.
+
+---
+
+### Custom / self-hosted (Azure, vLLM, LM Studio...)
+
+Qualquer endpoint compatível com a API OpenAI de chat completions:
+
+```yaml
+# config/omni-ai.yaml
+providers:
+  - name: azure
+    type: custom
+    baseUrl: https://meu-recurso.openai.azure.com/openai/deployments/gpt-4o
+    apiKey: ${AZURE_API_KEY}
+    defaultModel: gpt-4o
+```
+
+Endpoints compatíveis: **Azure OpenAI**, **LM Studio**, **vLLM**, **Together AI**, **Mistral AI**, **Perplexity**.
 
 ---
 
@@ -404,7 +608,7 @@ agentsDir: agents
 
 providers:
   - name: copilot
-    type: copilot            # "anthropic" | "openai" | "copilot" | "custom"
+    type: copilot            # "anthropic" | "openai" | "copilot" | "google" | "groq" | "ollama" | "custom"
     apiKey: ${GITHUB_TOKEN}  # referência a variável de ambiente — nunca hardcode
     baseUrl: https://api.githubcopilot.com
     defaultModel: gpt-4o     # modelo usado quando o agente não especifica
@@ -507,15 +711,72 @@ agents/backend/backend-dev.yaml
 
 ## Skills disponíveis
 
-As skills são as ferramentas que os agentes podem chamar durante o loop agentico. Todas operam dentro do `cwd` (diretório do projeto alvo) — nunca fora dele.
+As skills são as ferramentas que os agentes podem chamar durante o loop agentico. Todas operam dentro do `cwd` (diretório do projeto alvo) — nunca fora dele. Todas pertencem ao pacote `@omni-ai/skills` com subpath exports.
 
-| Skill | Package | O que faz |
-|-------|---------|-----------|
-| `read-file` | `@omni-ai/skills-fs` | Lê o conteúdo completo de um arquivo |
-| `write-file` | `@omni-ai/skills-fs` | Escreve ou sobrescreve um arquivo (cria diretórios automaticamente) |
-| `list-directory` | `@omni-ai/skills-fs` | Lista arquivos em um diretório (com suporte a recursivo e filtro por extensão) |
-| `search-code` | `@omni-ai/skills-code` | Busca texto ou regex em arquivos TypeScript/TSX |
-| `audit-accessibility` | `@omni-ai/skills-ux` | Scan heurístico de a11y em componentes TSX (alt, aria-label, foco, cores hardcoded...) |
+**Filesystem (`@omni-ai/skills/fs`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `read-file` | Lê o conteúdo completo de um arquivo |
+| `write-file` | Escreve ou sobrescreve um arquivo (cria diretórios automaticamente) |
+| `list-directory` | Lista arquivos em um diretório (recursivo, filtro por extensão) |
+
+**Código (`@omni-ai/skills/code`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `search-code` | Busca texto ou regex em arquivos TypeScript/TSX |
+
+**UX (`@omni-ai/skills/ux`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `audit-accessibility` | Scan heurístico de a11y em TSX (alt, aria-label, foco, contraste...) |
+
+**Git (`@omni-ai/skills/git`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `git-status` | Retorna o status atual do repositório |
+| `git-diff` | Retorna o diff de um arquivo ou do repositório |
+| `git-log` | Lista commits recentes com autoria e mensagem |
+| `git-commit-message` | Gera mensagem de commit a partir de um diff (chamada LLM) |
+
+**HTTP (`@omni-ai/skills/http`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `http-request` | Requisição HTTP autenticada (Bearer, Basic, OAuth2 client-credentials) |
+
+**Multimodal (`@omni-ai/skills/multimodal`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `analyze-image` | Analisa screenshots, diagramas ou mockups via providers com visão |
+
+**Backend (`@omni-ai/skills/backend`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `find-code-pattern` | Localiza padrões de código em arquivos TypeScript |
+| `analyze-nestjs-module` | Analisa estrutura de módulos NestJS |
+| `analyze-dynamo-schema` | Analisa schemas DynamoDB/TableService |
+| `analyze-graphql-schema` | Analisa schemas GraphQL |
+
+**Frontend (`@omni-ai/skills/frontend`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `find-component-pattern` | Localiza padrões em componentes React/TSX |
+| `analyze-component` | Analisa props, hooks e estrutura de componentes |
+| `analyze-module-structure` | Analisa a estrutura de módulos frontend |
+
+**QA (`@omni-ai/skills/qa`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `find-test-pattern` | Localiza padrões em arquivos de teste |
+| `analyze-test-coverage` | Analisa cobertura de testes por módulo |
 
 ### Segurança das skills de filesystem
 
@@ -881,6 +1142,112 @@ providers:
 
 ---
 
+## Recursos avançados
+
+### Agentes paralelos — `parallel()`
+
+Executa múltiplos agentes ao mesmo tempo no mesmo input e agrega os resultados.
+
+```typescript
+import { createRuntime, parallel } from "@omni-ai/core";
+
+const runtime = await createRuntime({ skills });
+
+const result = await parallel(runtime, {
+  agents: ["backend-dev", "qa-backend", "ux-reviewer"],
+  input: "revise o módulo de orders para qualidade, testes e acessibilidade",
+});
+
+for (const [agent, outcome] of Object.entries(result.results)) {
+  if ("error" in outcome) {
+    console.error(`${agent}: ${outcome.error}`);
+  } else {
+    console.log(`${agent} (${outcome.iterations} iterações):\n${outcome.output}\n`);
+  }
+}
+
+console.log(`Tokens totais: ${result.usage.inputTokens + result.usage.outputTokens}`);
+```
+
+Um agente com falha não cancela os demais — `parallel()` usa `Promise.allSettled` internamente.
+
+---
+
+### SkillMiddleware
+
+Intercepção configurável ao redor de cada chamada de skill. Útil para logging, rate-limiting, cache e auditoria.
+
+```typescript
+import { createRuntime } from "@omni-ai/core";
+import type { SkillMiddlewareFn } from "@omni-ai/core";
+
+// Middleware de logging
+const loggingMiddleware: SkillMiddlewareFn = async (name, input, ctx, next) => {
+  console.time(`skill:${name}`);
+  const result = await next();
+  console.timeEnd(`skill:${name}`);
+  return result;
+};
+
+// Middleware de cache em memória
+const cache = new Map<string, unknown>();
+const cachingMiddleware: SkillMiddlewareFn = async (name, input, ctx, next) => {
+  const key = `${name}:${JSON.stringify(input)}`;
+  if (cache.has(key)) return cache.get(key);
+  const result = await next();
+  cache.set(key, result);
+  return result;
+};
+
+const runtime = await createRuntime({ skills });
+
+// Middleware configurado por agente no YAML ou programaticamente
+const result = await runtime.run("backend-dev", "revise os arquivos em src/", {
+  middleware: [loggingMiddleware, cachingMiddleware],
+});
+```
+
+A cadeia executa na ordem de declaração: cada middleware chama `next()` para passar o controle ao próximo, com a skill real no fundo da pilha.
+
+---
+
+### MCP — Model Context Protocol
+
+#### Servidor: expor skills como ferramentas MCP
+
+```typescript
+import { createMcpServer } from "@omni-ai/mcp";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { readFileSkill, writeFileSkill } from "@omni-ai/skills/fs";
+
+const server = createMcpServer([readFileSkill, writeFileSkill], { name: "omni-ai" });
+await server.connect(new StdioServerTransport());
+```
+
+Via CLI:
+
+```bash
+omni mcp serve
+```
+
+#### Cliente: consumir um servidor MCP como skills
+
+```typescript
+import { connectMcpSkills } from "@omni-ai/mcp";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { createRuntime } from "@omni-ai/core";
+
+// Conecta a um servidor MCP externo e descobre seus tools
+const transport = new StdioClientTransport({ command: "npx", args: ["-y", "@my/mcp-server"] });
+const mcpSkills = await connectMcpSkills(transport);
+
+// Usa os tools remotos como qualquer ISkill nativa
+const runtime = await createRuntime({ skills: mcpSkills });
+const result = await runtime.run("backend-dev", "pesquise na documentação o contrato da API");
+```
+
+---
+
 ## Interfaces TypeScript principais
 
 ```typescript
@@ -921,6 +1288,14 @@ interface IAgent {
   run(options: AgentRunOptions): Promise<AgentRunResult>;
 }
 
+// Intercepta a execução de cada skill — chame next() para continuar a cadeia
+type SkillMiddlewareFn = (
+  name: string,
+  input: unknown,
+  ctx: SkillContext,
+  next: () => Promise<unknown>
+) => Promise<unknown>;
+
 interface AgentConfig {
   name: string;
   description: string;
@@ -931,6 +1306,7 @@ interface AgentConfig {
   maxIterations?: number;   // padrão: 10
   temperature?: number;
   memory?: MemoryConfig;
+  middleware?: SkillMiddlewareFn[];  // interceptação de tool calls
 }
 
 interface AgentRunOptions {
@@ -958,20 +1334,20 @@ interface SessionId {
 
 ```
 @omni-ai/cli
-  ├── @omni-ai/core          ← interfaces, registry, bootstrap, config
-  ├── @omni-ai/memory        ← stores, compactors, vector index
+  ├── @omni-ai/core               ← interfaces, registry, bootstrap, config
+  ├── @omni-ai/memory             ← stores, compactors, vector index
+  ├── @omni-ai/mcp                ← servidor e cliente MCP
   ├── @omni-ai/provider-anthropic
-  ├── @omni-ai/provider-openai
-  ├── @omni-ai/skills-fs
-  ├── @omni-ai/skills-code
-  └── @omni-ai/skills-ux
+  ├── @omni-ai/provider-openai    ← cobre OpenAI, Copilot, Groq, Ollama
+  ├── @omni-ai/provider-google
+  └── @omni-ai/skills             ← todas as skills (fs, code, ux, git, http, multimodal, backend, frontend, qa)
 
-@omni-ai/memory              → @omni-ai/core
-@omni-ai/provider-anthropic  → @omni-ai/core
-@omni-ai/provider-openai     → @omni-ai/core
-@omni-ai/skills-fs           → @omni-ai/core
-@omni-ai/skills-code         → @omni-ai/core
-@omni-ai/skills-ux           → @omni-ai/core
+@omni-ai/memory             → @omni-ai/core
+@omni-ai/mcp                → @omni-ai/core
+@omni-ai/provider-anthropic → @omni-ai/core
+@omni-ai/provider-openai    → @omni-ai/core
+@omni-ai/provider-google    → @omni-ai/core
+@omni-ai/skills             → @omni-ai/core
 ```
 
 `@omni-ai/core` não tem dependências internas — é a base estável do framework. Todos os outros pacotes dependem apenas dele, sem dependências cruzadas entre si.
@@ -1009,28 +1385,32 @@ pnpm build && omni list agents
 
 ### Concluído
 
-- [x] `@omni-ai/core` — interfaces, ProviderRegistry, SkillRegistry, config schema (Zod)
-- [x] `@omni-ai/provider-anthropic` — adapter completo com mapeamento de tipos e tool use
-- [x] `@omni-ai/provider-openai` — adapter completo (cobre OpenAI, Copilot, Groq, Ollama, Azure)
-- [x] `@omni-ai/skills-fs` — read-file, write-file, list-directory (com proteção path traversal)
-- [x] `@omni-ai/skills-code` — search-code (regex, filtro por extensão, maxResults)
-- [x] `@omni-ai/skills-ux` — audit-accessibility (scan heurístico TSX)
+**Pacotes**
+- [x] `@omni-ai/core` — interfaces, ProviderRegistry, SkillRegistry, config schema (Zod), `parallel()`, `SkillMiddleware`
 - [x] `@omni-ai/memory` — InMemoryStore, SQLiteMemoryStore, SemanticMemoryStore, VectorIndex, ObservationMaskingCompactor, SummaryCompactor
-- [x] `@omni-ai/cli` — `omni run`, `omni list`, `omni chain`, `omni init`, `--session`, `--verbose`, `--stream`, `--output`
+- [x] `@omni-ai/mcp` — servidor MCP (expõe skills como tools) e cliente MCP (`McpSkill`, `connectMcpSkills`)
+- [x] `@omni-ai/provider-anthropic` — adapter completo com mapeamento de tipos, tool use e streaming
+- [x] `@omni-ai/provider-openai` — cobre OpenAI, GitHub Copilot, Groq, Ollama e qualquer endpoint OpenAI-compatible
+- [x] `@omni-ai/provider-google` — adapter Google Gemini com chat, vision e embeddings
+- [x] `@omni-ai/skills` — 20 skills em 8 subpaths: fs, code, ux, git, http, multimodal, backend, frontend, qa
+- [x] `@omni-ai/cli` — `omni run`, `omni list`, `omni chain`, `omni init`, `omni new`, `omni serve`, `omni watch`, `omni eval`, `omni export`, `omni mcp serve`
+
+**Core**
 - [x] Bootstrap `createRuntime()` — API de alto nível para uso programático
 - [x] 21 agentes prontos — backend (7), frontend (5), ux (5), qa (4)
 - [x] Herança de provider/modelo — agentes herdam do config, podem sobrescrever
-- [x] Agentes inline — definição direta no `omni-ai.yaml` sem arquivo YAML separado
-- [x] Streaming de tokens em tempo real (`omni run ... --stream`, `omni chain ... --stream`)
-- [x] Encadeamento de agentes — output de um agente como input de outro (`omni chain`)
-- [x] `omni init` — wizard interativo para configuração inicial
-- [x] Suporte a embeddings — `IProvider.embed()` com vetores de contexto (`SemanticMemoryStore`, `VectorIndex`)
-- [x] `@omni-ai/skills-git` — git-status, git-diff, git-log, git-commit-message (geração LLM de mensagem de commit)
-- [x] `@omni-ai/skills-http` — http-request autenticado (Bearer, Basic, OAuth2 client-credentials)
-- [x] `@omni-ai/skills-multimodal` — analyze-image (análise de imagens via providers com visão)
-- [x] Suporte multimodal — `ContentPart[]` em `Message.content`; providers Anthropic e OpenAI atualizados
-- [x] Testes automatizados por pacote — 63 testes, 8 pacotes (vitest)
-- [x] ESLint + typescript-eslint — linting automático em todos os pacotes (`pnpm lint`)
+- [x] Agentes inline — definição direta no `omni-ai.yaml`
+- [x] Streaming de tokens em tempo real
+- [x] Memória e sessões — SQLite persistente com FTS5 e busca semântica por embeddings
+- [x] Compactors — redução automática de contexto (masking + summarization)
+- [x] Retry automático com backoff exponencial + fallback de provider
+- [x] `SkillMiddleware` — cadeia de interceptação configurável por agente
+- [x] `parallel()` — execução concorrente de múltiplos agentes com agregação de resultados
+- [x] Suporte multimodal — `ContentPart[]` em mensagens; `analyze-image` skill
+- [x] Compatibilidade MCP — `omni mcp serve` (stdio), `McpSkill` para consumir servers externos
+- [x] 296 testes automatizados — 41 arquivos, cobertura ≥ 80% em todas as métricas
+- [x] Biome — linting e formatação unificados em todos os pacotes
+- [x] CI/CD — GitHub Actions: lint → build → typecheck → test; branch protection; publish workflow
 
 ### Próximos passos
 
