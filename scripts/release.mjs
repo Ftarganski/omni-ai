@@ -19,7 +19,7 @@ if (!["patch", "minor", "major"].includes(bump)) {
 }
 
 // Read current version
-const pkgPath = "packages/omni-ai/package.json";
+const pkgPath = "bundle/omni-ai/package.json";
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
 const [major, minor, patch] = pkg.version.split(".").map(Number);
 
