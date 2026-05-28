@@ -30,7 +30,7 @@ const next =
   : bump === "minor" ? `${major}.${minor + 1}.0`
   : `${major}.${minor}.${patch + 1}`;
 
-const branch = `sdk/${next}`;
+const branch = `release/${next}`;
 
 // Garante working tree limpa
 const dirty = execSync("git status --porcelain").toString().trim();
@@ -60,11 +60,11 @@ execSync(`git push origin ${branch}`, { stdio: "inherit" });
 
 // Abre PR para main
 execSync(
-  `gh pr create --title "sdk/${next}" --base main --body "## Release ${next}\n\nAo mergear esta PR, o pacote \`@ftarganski/omni-ai@${next}\` será publicado automaticamente no npm."`,
+  `gh pr create --title "release/${next}" --base main --body "## Release ${next}\n\nAo mergear esta PR, o pacote \`@ftarganski/omni-ai@${next}\` será publicado automaticamente no npm."`,
   { stdio: "inherit" }
 );
 
 // Volta para o branch anterior
 execSync("git checkout -", { stdio: "inherit" });
 
-console.log(`\n✓ PR ${branch} criada — a publicação no npm ocorrerá ao mergear.\n`);
+console.log(`\n✓ PR release/${next} criada — a publicação no npm ocorrerá ao mergear.\n`);
