@@ -1,27 +1,36 @@
 #!/usr/bin/env node
 /**
- * Usage: pnpm release <version>
- *   e.g. pnpm release 0.2.0
- *        pnpm release 0.2.0-beta.1
- *
- * Requires a clean working tree on the main branch.
- * Creates a git tag and a GitHub Release, which triggers the publish workflow.
+ * Usage:
+ *   pnpm release          — incrementa patch  (0.1.0 → 0.1.1)
+ *   pnpm release patch    — incrementa patch  (0.1.0 → 0.1.1)
+ *   pnpm release minor    — incrementa minor  (0.1.0 → 0.2.0)
+ *   pnpm release major    — incrementa major  (0.1.0 → 1.0.0)
  */
 
 import { execSync } from "child_process";
 import { readFileSync, writeFileSync } from "fs";
 
-const version = process.argv[2];
+const bump = process.argv[2] ?? "patch";
 
-if (!version || !/^\d+\.\d+\.\d+(-[\w.]+)?$/.test(version)) {
-  console.error("Erro: versão inválida.");
-  console.error("Uso: pnpm release <versão>  ex: pnpm release 0.2.0");
+if (!["patch", "minor", "major"].includes(bump)) {
+  console.error(`Erro: argumento inválido '${bump}'.`);
+  console.error("Uso: pnpm release [patch|minor|major]");
   process.exit(1);
 }
 
-const tag = `v${version}`;
+// Read current version
+const pkgPath = "packages/omni-ai/package.json";
+const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+const [major, minor, patch] = pkg.version.split(".").map(Number);
 
-// Check for clean working tree
+const next =
+  bump === "major" ? `${major + 1}.0.0`
+  : bump === "minor" ? `${major}.${minor + 1}.0`
+  : `${major}.${minor}.${patch + 1}`;
+
+const tag = `v${next}`;
+
+// Check clean working tree
 const dirty = execSync("git status --porcelain").toString().trim();
 if (dirty) {
   console.error("Erro: há mudanças não commitadas.");
@@ -29,7 +38,7 @@ if (dirty) {
   process.exit(1);
 }
 
-// Check we're on main
+// Check we're on main/master
 const branch = execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
 if (branch !== "main" && branch !== "master") {
   console.error(`Erro: você está na branch '${branch}'.`);
@@ -40,19 +49,17 @@ if (branch !== "main" && branch !== "master") {
 // Pull latest
 execSync("git pull --ff-only", { stdio: "inherit" });
 
-// Bump packages/omni-ai/package.json
-const pkgPath = "packages/omni-ai/package.json";
-const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+// Bump version in package.json (ephemeral — not committed back)
 const prev = pkg.version;
-pkg.version = version;
+pkg.version = next;
 writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
-console.log(`\n  ${prev} → ${version}\n`);
+console.log(`\n  ${prev} → ${next}\n`);
 
-// Create and push tag (package.json bump is ephemeral — not committed)
+// Create and push tag
 execSync(`git tag ${tag}`, { stdio: "inherit" });
 execSync(`git push origin ${tag}`, { stdio: "inherit" });
 
-// Create GitHub Release (publishes immediately, triggering the npm publish workflow)
+// Create GitHub Release
 execSync(
   `gh release create ${tag} --title "${tag}" --generate-notes`,
   { stdio: "inherit" }
