@@ -45,7 +45,8 @@ describe("composeMiddleware", () => {
 
   it("runs middleware in order", async () => {
     const order: string[] = [];
-    const mw = (label: string): SkillMiddlewareFn =>
+    const mw =
+      (label: string): SkillMiddlewareFn =>
       async (_name, _input, _ctx, next) => {
         order.push(`enter:${label}`);
         const result = await next();

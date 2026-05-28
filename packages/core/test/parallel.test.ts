@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { parallel } from "../src/parallel.js";
 import type { AgentRunResult, Runtime } from "../src/index.js";
+import { parallel } from "../src/parallel.js";
 
 function makeRuntime(responses: Record<string, AgentRunResult | Error>): Runtime {
   return {
