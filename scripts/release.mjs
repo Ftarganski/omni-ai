@@ -38,14 +38,6 @@ if (dirty) {
   process.exit(1);
 }
 
-// Check we're on main/master
-const branch = execSync("git rev-parse --abbrev-ref HEAD").toString().trim();
-if (branch !== "main" && branch !== "master") {
-  console.error(`Erro: você está na branch '${branch}'.`);
-  console.error("Faça checkout do main antes de criar uma release.");
-  process.exit(1);
-}
-
 // Pull latest
 execSync("git pull --ff-only", { stdio: "inherit" });
 
