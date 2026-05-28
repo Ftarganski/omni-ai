@@ -80,7 +80,7 @@ npm install -g @ftarganski/omni-ai
 ```bash
 # Na raiz do omni-ai, uma vez só
 pnpm build
-npm link packages/omni-ai
+npm link bundle/omni-ai
 ```
 
 Depois disso, `omni` funciona de qualquer diretório.
@@ -1032,10 +1032,10 @@ As skills sempre operam em `/caminho/para/meu-projeto` — o agente lê, escreve
 
 ```bash
 # Usando node diretamente (após pnpm build)
-node /caminho/para/omni-ai/packages/omni-ai/dist/cli/bin.js run backend-dev "..."
+node /caminho/para/omni-ai/bundle/omni-ai/dist/cli/bin.js run backend-dev "..."
 
 # Ou com alias no shell (~/.bashrc, ~/.zshrc ou $PROFILE no PowerShell)
-alias omni="node /caminho/para/omni-ai/packages/omni-ai/dist/cli/bin.js"
+alias omni="node /caminho/para/omni-ai/bundle/omni-ai/dist/cli/bin.js"
 ```
 
 ---
