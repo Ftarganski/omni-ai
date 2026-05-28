@@ -5,10 +5,14 @@ import { Command } from "commander";
 import { config as loadDotenv } from "dotenv";
 import "@omni-ai/provider-google";
 import { chainCommand } from "./commands/chain.js";
+import { evalCommand } from "./commands/eval.js";
+import { exportCommand } from "./commands/export.js";
 import { initCommand } from "./commands/init.js";
 import { listCommand } from "./commands/list.js";
 import { newCommand } from "./commands/new.js";
 import { runCommand } from "./commands/run.js";
+import { serveCommand } from "./commands/serve.js";
+import { watchCommand } from "./commands/watch.js";
 
 // Load .env from the omni-ai repo root (4 levels up from packages/cli/dist/)
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -44,6 +48,38 @@ program
   .option("-v, --verbose", "Print each agent's full output as the chain progresses")
   .option("-s, --stream", "Stream tokens from each agent in real time")
   .action(chainCommand);
+
+program
+  .command("export <sessionId>")
+  .description("Export a session history as markdown or JSON")
+  .option("-f, --format <format>", "Output format: markdown | json (default: markdown)")
+  .option("-o, --output <file>", "Save output to file instead of stdout")
+  .option("-l, --limit <n>", "Limit to last N messages")
+  .action(exportCommand);
+
+program
+  .command("watch <agent> <prompt>")
+  .description("Re-run an agent automatically when project files change")
+  .option("-c, --config <path>", "Path to omni-ai.yaml")
+  .option("-g, --glob <pattern>", "Glob of files to watch (default: src/**/*.{ts,js,yaml,json})")
+  .option("-d, --debounce <ms>", "Debounce delay in ms (default: 500)")
+  .option("--stream", "Stream tokens in real time")
+  .action(watchCommand);
+
+program
+  .command("serve")
+  .description("Start a local HTTP server to run agents via REST or SSE")
+  .option("-p, --port <number>", "Port to listen on (default: 3000)")
+  .option("-c, --config <path>", "Path to omni-ai.yaml")
+  .action(serveCommand);
+
+program
+  .command("eval <agent> <dataset>")
+  .description("Evaluate an agent against a dataset of (input, expected) pairs")
+  .option("-c, --config <path>", "Path to omni-ai.yaml")
+  .option("--concurrency <n>", "Number of parallel evaluations (default: 3)")
+  .option("-o, --output <file>", "Save JSON report to file")
+  .action(evalCommand);
 
 const list = program.command("list").description("List available resources");
 
