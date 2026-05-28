@@ -1,20 +1,11 @@
 name: Publish to npm
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Version to publish (e.g. 0.2.0)"
-        required: true
-        type: string
-      tag:
-        description: "npm dist-tag (default: latest)"
-        required: false
-        default: "latest"
-        type: string
+  release:
+    types: [published]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   publish:
@@ -35,28 +26,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build all packages
-        run: pnpm build
-
-      - name: Bump version
+      - name: Set version from release tag
         run: |
+          VERSION="${GITHUB_REF_NAME#v}"
           node -e "
             const fs = require('fs');
             const p = JSON.parse(fs.readFileSync('packages/omni-ai/package.json', 'utf8'));
-            p.version = '${{ inputs.version }}';
+            p.version = '${VERSION}';
             fs.writeFileSync('packages/omni-ai/package.json', JSON.stringify(p, null, 2) + '\n');
           "
 
+      - name: Build
+        run: pnpm build
+
       - name: Publish
-        run: pnpm publish --filter @ftarganski/omni-ai --no-git-checks --tag ${{ inputs.tag }}
+        run: pnpm publish --filter @ftarganski/omni-ai --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Tag release in git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add packages/omni-ai/package.json
-          git commit -m "chore: release v${{ inputs.version }}"
-          git tag "v${{ inputs.version }}"
-          git push origin HEAD --tags
