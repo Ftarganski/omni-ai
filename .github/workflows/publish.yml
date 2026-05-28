@@ -16,6 +16,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
 
@@ -31,14 +33,16 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Publish
+      - name: Publish to npm
         run: pnpm publish --filter @ftarganski/omni-ai --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create git tag and GitHub Release
         run: |
-          VERSION=$(node -e "console.log(require('./bundle/omni-ai/package.json').version)")
+          VERSION=$(node -p "JSON.parse(require('fs').readFileSync('./bundle/omni-ai/package.json','utf8')).version")
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag "v${VERSION}"
           git push origin "v${VERSION}"
           gh release create "v${VERSION}" --title "v${VERSION}" --generate-notes
