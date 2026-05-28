@@ -1,6 +1,6 @@
 {
   "name": "@ftarganski/omni-ai",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Provider-agnostic AI agents and skills framework",
   "type": "module",
   "exports": {
@@ -82,7 +82,9 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "lint": "biome check src/"
+    "lint": "biome check src/",
+    "prepack": "node -e \"require('fs').copyFileSync('../../README.md', './README.md')\"",
+    "postpack": "node -e \"try{require('fs').unlinkSync('./README.md')}catch(e){}\""
   },
   "dependencies": {
     "@omni-ai/cli": "workspace:*",
