@@ -6,7 +6,7 @@
  *   pnpm release minor    — incrementa minor  (1.0.0 → 1.1.0)
  *   pnpm release major    — incrementa major  (1.0.0 → 2.0.0)
  *
- * Cria branch sdk/X.X.X, commita o bump de versão e abre PR para main.
+ * Cria branch release/X.X.X, commita o bump de versão e abre PR para main.
  * A publicação no npm ocorre automaticamente ao mergear a PR.
  */
 
@@ -59,8 +59,25 @@ execSync(`git commit -m "release: bump version to ${next}"`, { stdio: "inherit" 
 execSync(`git push origin ${branch}`, { stdio: "inherit" });
 
 // Abre PR para main
+const prBody = `## Release ${next}
+
+**Pacote:** \`@ftarganski/omni-ai@${next}\`
+**Tipo de bump:** ${bump} (${prev} → ${next})
+
+### O que acontece ao mergear
+
+- Publicação automática no npm com tag \`latest\`
+- Criação da tag \`v${next}\` no repositório
+- GitHub Release gerado com changelog automático
+
+### Checklist
+
+- [ ] Changelog revisado
+- [ ] Versão correta confirmada: \`${next}\`
+- [ ] Sem breaking changes não documentados`;
+
 execSync(
-  `gh pr create --title "release/${next}" --base main --body "## Release ${next}\n\nAo mergear esta PR, o pacote \`@ftarganski/omni-ai@${next}\` será publicado automaticamente no npm."`,
+  `gh pr create --title "release/${next}" --base main --body ${JSON.stringify(prBody)}`,
   { stdio: "inherit" }
 );
 
