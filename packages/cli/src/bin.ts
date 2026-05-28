@@ -9,9 +9,9 @@ import { evalCommand } from "./commands/eval.js";
 import { exportCommand } from "./commands/export.js";
 import { initCommand } from "./commands/init.js";
 import { listCommand } from "./commands/list.js";
+import { mcpServeCommand } from "./commands/mcp-serve.js";
 import { newCommand } from "./commands/new.js";
 import { runCommand } from "./commands/run.js";
-import { mcpServeCommand } from "./commands/mcp-serve.js";
 import { serveCommand } from "./commands/serve.js";
 import { watchCommand } from "./commands/watch.js";
 
