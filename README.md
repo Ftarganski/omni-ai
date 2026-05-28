@@ -1054,10 +1054,10 @@ pnpm build && omni list agents
 - [x] Suporte multimodal — skill `analyze-image` para análise de screenshots, diagramas e mockups
 
 **Core**
-- [ ] Compatibilidade MCP (Model Context Protocol) — expor skills como tools MCP e consumir servidores MCP externos
-- [ ] Agentes paralelos — `parallel()` wrapper para rodar agentes concorrentemente e agregar resultados
-- [ ] `SkillMiddleware` — hooks de interceptação para logging, rate-limiting e cache de tool calls
-- [ ] Publicação npm — publicar os pacotes `@omni-ai/*` no registro público do npm
+- [x] Compatibilidade MCP (Model Context Protocol) — expor skills como tools MCP e consumir servidores MCP externos
+- [x] Agentes paralelos — `parallel()` wrapper para rodar agentes concorrentemente e agregar resultados
+- [x] `SkillMiddleware` — hooks de interceptação para logging, rate-limiting e cache de tool calls
+- [x] Publicação npm — publicar os pacotes `@omni-ai/*` no registro público do npm
 
 ---
 

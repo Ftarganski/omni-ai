@@ -7,6 +7,10 @@
     "omni": "./dist/bin.js"
   },
   "main": "./dist/bin.js",
+  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc && node -e \"import('fs').then(fs => fs.chmodSync('dist/bin.js', 0o755))\"",
     "dev": "tsc --watch",
@@ -17,6 +21,7 @@
   },
   "dependencies": {
     "@omni-ai/core": "workspace:*",
+    "@omni-ai/mcp": "workspace:*",
     "@omni-ai/provider-anthropic": "workspace:*",
     "@omni-ai/provider-google": "workspace:*",
     "@omni-ai/provider-openai": "workspace:*",

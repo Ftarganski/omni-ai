@@ -156,6 +156,19 @@ export interface ISkill<TInput = unknown, TOutput = unknown> {
   execute(input: TInput, ctx: SkillContext): Promise<TOutput>;
 }
 
+// --- Middleware ---
+
+/**
+ * Intercepts skill execution. Call `next()` to continue the chain.
+ * Throw or return an altered value to short-circuit.
+ */
+export type SkillMiddlewareFn = (
+  name: string,
+  input: unknown,
+  ctx: SkillContext,
+  next: () => Promise<unknown>
+) => Promise<unknown>;
+
 // --- Agent ---
 
 export interface AgentConfig {
@@ -168,6 +181,7 @@ export interface AgentConfig {
   maxIterations?: number;
   temperature?: number;
   memory?: MemoryConfig;
+  middleware?: SkillMiddlewareFn[];
 }
 
 export interface AgentRunOptions {

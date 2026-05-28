@@ -11,6 +11,7 @@ import { initCommand } from "./commands/init.js";
 import { listCommand } from "./commands/list.js";
 import { newCommand } from "./commands/new.js";
 import { runCommand } from "./commands/run.js";
+import { mcpServeCommand } from "./commands/mcp-serve.js";
 import { serveCommand } from "./commands/serve.js";
 import { watchCommand } from "./commands/watch.js";
 
@@ -80,6 +81,14 @@ program
   .option("--concurrency <n>", "Number of parallel evaluations (default: 3)")
   .option("-o, --output <file>", "Save JSON report to file")
   .action(evalCommand);
+
+const mcp = program.command("mcp").description("MCP (Model Context Protocol) integration");
+
+mcp
+  .command("serve")
+  .description("Expose all registered skills as MCP tools over stdio")
+  .option("-c, --config <path>", "Path to omni-ai.yaml")
+  .action(mcpServeCommand);
 
 const list = program.command("list").description("List available resources");
 

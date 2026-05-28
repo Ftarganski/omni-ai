@@ -1,7 +1,7 @@
 {
-  "name": "@omni-ai/provider-google",
+  "name": "@omni-ai/mcp",
   "version": "0.1.0",
-  "description": "Google Gemini provider adapter for omni-ai",
+  "description": "MCP (Model Context Protocol) integration for omni-ai — server and client adapters",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -24,8 +24,9 @@
     "format": "biome check --write src/ test/"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.0",
-    "@omni-ai/core": "workspace:*"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@omni-ai/core": "workspace:*",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

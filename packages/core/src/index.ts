@@ -3,6 +3,8 @@ export * from "./agents/loader.js";
 export * from "./bootstrap.js";
 export * from "./config/loader.js";
 export * from "./config/schema.js";
+export * from "./middleware/compose.js";
+export * from "./parallel.js";
 export * from "./providers/fallback.js";
 export * from "./providers/registry.js";
 export * from "./providers/retry.js";
