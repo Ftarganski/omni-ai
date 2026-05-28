@@ -14,7 +14,7 @@
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "omni": "node packages/cli/dist/bin.js"
+    "omni": "node packages/omni-ai/dist/cli/bin.js"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
@@ -24,7 +24,7 @@
     "vitest": "^4.1.7"
   },
   "engines": {
-    "node": ">=20.0.0",
+    "node": ">=22.0.0",
     "pnpm": ">=9.0.0"
   },
   "packageManager": "pnpm@9.0.0"

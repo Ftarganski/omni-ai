@@ -1,0 +1,124 @@
+{
+  "name": "@ftarganski/omni-ai",
+  "version": "0.1.0",
+  "description": "Provider-agnostic AI agents and skills framework",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./skills": {
+      "import": "./dist/skills/index.js",
+      "types": "./dist/skills/index.d.ts"
+    },
+    "./skills/fs": {
+      "import": "./dist/skills/fs.js",
+      "types": "./dist/skills/fs.d.ts"
+    },
+    "./skills/code": {
+      "import": "./dist/skills/code.js",
+      "types": "./dist/skills/code.d.ts"
+    },
+    "./skills/ux": {
+      "import": "./dist/skills/ux.js",
+      "types": "./dist/skills/ux.d.ts"
+    },
+    "./skills/git": {
+      "import": "./dist/skills/git.js",
+      "types": "./dist/skills/git.d.ts"
+    },
+    "./skills/http": {
+      "import": "./dist/skills/http.js",
+      "types": "./dist/skills/http.d.ts"
+    },
+    "./skills/multimodal": {
+      "import": "./dist/skills/multimodal.js",
+      "types": "./dist/skills/multimodal.d.ts"
+    },
+    "./skills/backend": {
+      "import": "./dist/skills/backend.js",
+      "types": "./dist/skills/backend.d.ts"
+    },
+    "./skills/frontend": {
+      "import": "./dist/skills/frontend.js",
+      "types": "./dist/skills/frontend.d.ts"
+    },
+    "./skills/qa": {
+      "import": "./dist/skills/qa.js",
+      "types": "./dist/skills/qa.d.ts"
+    },
+    "./memory": {
+      "import": "./dist/memory.js",
+      "types": "./dist/memory.d.ts"
+    },
+    "./mcp": {
+      "import": "./dist/mcp.js",
+      "types": "./dist/mcp.d.ts"
+    },
+    "./provider-anthropic": {
+      "import": "./dist/provider-anthropic.js",
+      "types": "./dist/provider-anthropic.d.ts"
+    },
+    "./provider-openai": {
+      "import": "./dist/provider-openai.js",
+      "types": "./dist/provider-openai.d.ts"
+    },
+    "./provider-google": {
+      "import": "./dist/provider-google.js",
+      "types": "./dist/provider-google.d.ts"
+    }
+  },
+  "bin": {
+    "omni": "./dist/cli/bin.js"
+  },
+  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "biome check src/"
+  },
+  "dependencies": {
+    "@omni-ai/cli": "workspace:*",
+    "@omni-ai/core": "workspace:*",
+    "@omni-ai/memory": "workspace:*",
+    "@omni-ai/mcp": "workspace:*",
+    "@omni-ai/provider-anthropic": "workspace:*",
+    "@omni-ai/provider-google": "workspace:*",
+    "@omni-ai/provider-openai": "workspace:*",
+    "@omni-ai/skills": "workspace:*",
+    "@inquirer/prompts": "^7.0.0",
+    "chalk": "^5.3.0",
+    "chokidar": "^4.0.0",
+    "commander": "^12.0.0",
+    "dotenv": "^16.0.0",
+    "express": "^4.21.0",
+    "glob": "^11.0.0",
+    "yaml": "^2.7.0",
+    "zod": "^3.24.0"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@google/generative-ai": "^0.24.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "better-sqlite3": "^11.0.0",
+    "openai": "^4.78.0"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": { "optional": true },
+    "@google/generative-ai": { "optional": true },
+    "@modelcontextprotocol/sdk": { "optional": true },
+    "better-sqlite3": { "optional": true },
+    "openai": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/express": "^4.17.0",
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0"
+  }
+}

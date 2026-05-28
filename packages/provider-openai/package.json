@@ -11,10 +11,8 @@
       "types": "./dist/index.d.ts"
     }
   },
+  "private": true,
   "files": ["dist"],
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",

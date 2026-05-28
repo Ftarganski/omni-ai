@@ -38,7 +38,7 @@ As skills (`read-file`, `write-file`, `search-code`, etc.) operam sempre no **di
 
 | Ferramenta | Versão mínima |
 |------------|---------------|
-| Node.js    | 20.x          |
+| Node.js    | 22.x          |
 | pnpm       | 9.x           |
 
 ### 1. Clonar e instalar
@@ -69,9 +69,18 @@ Edite `config/omni-ai.yaml` e `.env` de acordo com o provider escolhido. Veja a 
 
 ### 3. Disponibilizar o CLI globalmente
 
+**Opção A — via npm (pacote publicado):**
+
 ```bash
-# Uma vez — registra o comando `omni` no sistema
-pnpm --filter @omni-ai/cli link --global
+npm install -g @ftarganski/omni-ai
+```
+
+**Opção B — via link local (desenvolvimento):**
+
+```bash
+# Na raiz do omni-ai, uma vez só
+pnpm build
+npm link packages/omni-ai
 ```
 
 Depois disso, `omni` funciona de qualquer diretório.
@@ -711,9 +720,9 @@ agents/backend/backend-dev.yaml
 
 ## Skills disponíveis
 
-As skills são as ferramentas que os agentes podem chamar durante o loop agentico. Todas operam dentro do `cwd` (diretório do projeto alvo) — nunca fora dele. Todas pertencem ao pacote `@omni-ai/skills` com subpath exports.
+As skills são as ferramentas que os agentes podem chamar durante o loop agentico. Todas operam dentro do `cwd` (diretório do projeto alvo) — nunca fora dele. Disponíveis via subpath exports de `@ftarganski/omni-ai`.
 
-**Filesystem (`@omni-ai/skills/fs`)**
+**Filesystem (`@ftarganski/omni-ai/skills/fs`)**
 
 | Skill | O que faz |
 |-------|-----------|
@@ -721,19 +730,19 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 | `write-file` | Escreve ou sobrescreve um arquivo (cria diretórios automaticamente) |
 | `list-directory` | Lista arquivos em um diretório (recursivo, filtro por extensão) |
 
-**Código (`@omni-ai/skills/code`)**
+**Código (`@ftarganski/omni-ai/skills/code`)**
 
 | Skill | O que faz |
 |-------|-----------|
 | `search-code` | Busca texto ou regex em arquivos TypeScript/TSX |
 
-**UX (`@omni-ai/skills/ux`)**
+**UX (`@ftarganski/omni-ai/skills/ux`)**
 
 | Skill | O que faz |
 |-------|-----------|
 | `audit-accessibility` | Scan heurístico de a11y em TSX (alt, aria-label, foco, contraste...) |
 
-**Git (`@omni-ai/skills/git`)**
+**Git (`@ftarganski/omni-ai/skills/git`)**
 
 | Skill | O que faz |
 |-------|-----------|
@@ -742,19 +751,19 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 | `git-log` | Lista commits recentes com autoria e mensagem |
 | `git-commit-message` | Gera mensagem de commit a partir de um diff (chamada LLM) |
 
-**HTTP (`@omni-ai/skills/http`)**
+**HTTP (`@ftarganski/omni-ai/skills/http`)**
 
 | Skill | O que faz |
 |-------|-----------|
 | `http-request` | Requisição HTTP autenticada (Bearer, Basic, OAuth2 client-credentials) |
 
-**Multimodal (`@omni-ai/skills/multimodal`)**
+**Multimodal (`@ftarganski/omni-ai/skills/multimodal`)**
 
 | Skill | O que faz |
 |-------|-----------|
 | `analyze-image` | Analisa screenshots, diagramas ou mockups via providers com visão |
 
-**Backend (`@omni-ai/skills/backend`)**
+**Backend (`@ftarganski/omni-ai/skills/backend`)**
 
 | Skill | O que faz |
 |-------|-----------|
@@ -763,7 +772,7 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 | `analyze-dynamo-schema` | Analisa schemas DynamoDB/TableService |
 | `analyze-graphql-schema` | Analisa schemas GraphQL |
 
-**Frontend (`@omni-ai/skills/frontend`)**
+**Frontend (`@ftarganski/omni-ai/skills/frontend`)**
 
 | Skill | O que faz |
 |-------|-----------|
@@ -771,7 +780,7 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 | `analyze-component` | Analisa props, hooks e estrutura de componentes |
 | `analyze-module-structure` | Analisa a estrutura de módulos frontend |
 
-**QA (`@omni-ai/skills/qa`)**
+**QA (`@ftarganski/omni-ai/skills/qa`)**
 
 | Skill | O que faz |
 |-------|-----------|
@@ -804,8 +813,8 @@ O ID de sessão segue o formato `"resourceId:threadId"`. Use `resourceId` para i
 ### Via API programática
 
 ```typescript
-import { createRuntime } from "@omni-ai/core";
-import { SQLiteMemoryStore, ObservationMaskingCompactor } from "@omni-ai/memory";
+import { createRuntime } from "@ftarganski/omni-ai";
+import { SQLiteMemoryStore, ObservationMaskingCompactor } from "@ftarganski/omni-ai/memory";
 
 const runtime = await createRuntime({
   skills: [/* suas skills extras */],
@@ -860,9 +869,9 @@ Iteração 4:  2.100 tokens    → Total: 8.400 tokens  (redução de 68%)
 `SemanticMemoryStore` substitui a busca por palavras-chave (FTS5) por similaridade de coseno usando embeddings do provider.
 
 ```typescript
-import { createRuntime } from "@omni-ai/core";
-import { SQLiteMemoryStore, SemanticMemoryStore } from "@omni-ai/memory";
-import { OpenAIProvider } from "@omni-ai/provider-openai";
+import { createRuntime } from "@ftarganski/omni-ai";
+import { SQLiteMemoryStore, SemanticMemoryStore } from "@ftarganski/omni-ai/memory";
+import { OpenAIProvider } from "@ftarganski/omni-ai/provider-openai";
 
 // Provider com suporte a embeddings (capabilities.embedding = true)
 const embeddingProvider = new OpenAIProvider({ apiKey: process.env.OPENAI_API_KEY! });
@@ -890,7 +899,7 @@ const results = await store.search(
 **`VectorIndex`** — índice vetorial in-memory para uso direto:
 
 ```typescript
-import { VectorIndex } from "@omni-ai/memory";
+import { VectorIndex } from "@ftarganski/omni-ai/memory";
 
 const index = new VectorIndex<string>();
 index.add("doc1", embeddingVector1);
@@ -1001,9 +1010,7 @@ O `omni-ai` é um repositório central — os agentes e o config ficam nele. Voc
 ### Setup único (instalação global)
 
 ```bash
-# Na raiz do omni-ai, uma vez só:
-cd /caminho/para/omni-ai
-pnpm --filter @omni-ai/cli link --global
+npm install -g @ftarganski/omni-ai
 ```
 
 ### Uso do dia a dia
@@ -1024,11 +1031,11 @@ As skills sempre operam em `/caminho/para/meu-projeto` — o agente lê, escreve
 ### Alternativa sem instalação global
 
 ```bash
-# Usando node diretamente
-node /caminho/para/omni-ai/packages/cli/dist/bin.js run backend-dev "..."
+# Usando node diretamente (após pnpm build)
+node /caminho/para/omni-ai/packages/omni-ai/dist/cli/bin.js run backend-dev "..."
 
 # Ou com alias no shell (~/.bashrc, ~/.zshrc ou $PROFILE no PowerShell)
-alias omni="node /caminho/para/omni-ai/packages/cli/dist/bin.js"
+alias omni="node /caminho/para/omni-ai/packages/omni-ai/dist/cli/bin.js"
 ```
 
 ---
@@ -1062,7 +1069,7 @@ O arquivo estará disponível via `omni run my-agent "..."` imediatamente — se
 Copie `docs/templates/skill.ts` e implemente `ISkill`:
 
 ```typescript
-import type { ISkill } from "@omni-ai/core";
+import type { ISkill } from "@ftarganski/omni-ai";
 import { z } from "zod";
 
 const InputSchema = z.object({
@@ -1086,7 +1093,7 @@ export const myDatabaseSkill: ISkill<Input, string[]> = {
 Registre a skill ao criar o runtime:
 
 ```typescript
-import { createRuntime } from "@omni-ai/core";
+import { createRuntime } from "@ftarganski/omni-ai";
 import { myDatabaseSkill } from "./my-database-skill.js";
 
 const runtime = await createRuntime({
@@ -1098,11 +1105,11 @@ Ou passe diretamente no CLI customizando o `run.ts`.
 
 ### Criar um provider personalizado
 
-Implemente `IProvider` de `@omni-ai/core`:
+Implemente `IProvider` de `@ftarganski/omni-ai`:
 
 ```typescript
-import type { IProvider, CompletionRequest, CompletionResponse } from "@omni-ai/core";
-import { registerProvider } from "@omni-ai/core";
+import type { IProvider, CompletionRequest, CompletionResponse } from "@ftarganski/omni-ai";
+import { registerProvider } from "@ftarganski/omni-ai";
 
 class MyProvider implements IProvider {
   readonly name: string;
@@ -1149,7 +1156,7 @@ providers:
 Executa múltiplos agentes ao mesmo tempo no mesmo input e agrega os resultados.
 
 ```typescript
-import { createRuntime, parallel } from "@omni-ai/core";
+import { createRuntime, parallel } from "@ftarganski/omni-ai";
 
 const runtime = await createRuntime({ skills });
 
@@ -1178,8 +1185,8 @@ Um agente com falha não cancela os demais — `parallel()` usa `Promise.allSett
 Intercepção configurável ao redor de cada chamada de skill. Útil para logging, rate-limiting, cache e auditoria.
 
 ```typescript
-import { createRuntime } from "@omni-ai/core";
-import type { SkillMiddlewareFn } from "@omni-ai/core";
+import { createRuntime } from "@ftarganski/omni-ai";
+import type { SkillMiddlewareFn } from "@ftarganski/omni-ai";
 
 // Middleware de logging
 const loggingMiddleware: SkillMiddlewareFn = async (name, input, ctx, next) => {
@@ -1216,9 +1223,9 @@ A cadeia executa na ordem de declaração: cada middleware chama `next()` para p
 #### Servidor: expor skills como ferramentas MCP
 
 ```typescript
-import { createMcpServer } from "@omni-ai/mcp";
+import { createMcpServer } from "@ftarganski/omni-ai/mcp";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { readFileSkill, writeFileSkill } from "@omni-ai/skills/fs";
+import { readFileSkill, writeFileSkill } from "@ftarganski/omni-ai/skills/fs";
 
 const server = createMcpServer([readFileSkill, writeFileSkill], { name: "omni-ai" });
 await server.connect(new StdioServerTransport());
@@ -1233,9 +1240,9 @@ omni mcp serve
 #### Cliente: consumir um servidor MCP como skills
 
 ```typescript
-import { connectMcpSkills } from "@omni-ai/mcp";
+import { connectMcpSkills } from "@ftarganski/omni-ai/mcp";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { createRuntime } from "@omni-ai/core";
+import { createRuntime } from "@ftarganski/omni-ai";
 
 // Conecta a um servidor MCP externo e descobre seus tools
 const transport = new StdioClientTransport({ command: "npx", args: ["-y", "@my/mcp-server"] });
@@ -1251,7 +1258,7 @@ const result = await runtime.run("backend-dev", "pesquise na documentação o co
 ## Interfaces TypeScript principais
 
 ```typescript
-// @omni-ai/core
+// @ftarganski/omni-ai
 
 interface IProvider {
   readonly name: string;
@@ -1332,25 +1339,29 @@ interface SessionId {
 
 ## Arquitetura de pacotes
 
-```
-@omni-ai/cli
-  ├── @omni-ai/core               ← interfaces, registry, bootstrap, config
-  ├── @omni-ai/memory             ← stores, compactors, vector index
-  ├── @omni-ai/mcp                ← servidor e cliente MCP
-  ├── @omni-ai/provider-anthropic
-  ├── @omni-ai/provider-openai    ← cobre OpenAI, Copilot, Groq, Ollama
-  ├── @omni-ai/provider-google
-  └── @omni-ai/skills             ← todas as skills (fs, code, ux, git, http, multimodal, backend, frontend, qa)
+O npm publica um único pacote com subpath exports:
 
-@omni-ai/memory             → @omni-ai/core
-@omni-ai/mcp                → @omni-ai/core
-@omni-ai/provider-anthropic → @omni-ai/core
-@omni-ai/provider-openai    → @omni-ai/core
-@omni-ai/provider-google    → @omni-ai/core
-@omni-ai/skills             → @omni-ai/core
+```
+@ftarganski/omni-ai              ← core: Agent, Runtime, ISkill, IProvider...
+@ftarganski/omni-ai/skills       ← todas as skills
+@ftarganski/omni-ai/skills/fs    ← read-file, write-file, list-directory
+@ftarganski/omni-ai/skills/git   ← git-diff, git-log, git-status, git-commit-message
+@ftarganski/omni-ai/skills/code  ← search-code
+@ftarganski/omni-ai/skills/http  ← http-request
+@ftarganski/omni-ai/skills/ux    ← audit-accessibility
+@ftarganski/omni-ai/skills/multimodal ← analyze-image
+@ftarganski/omni-ai/skills/backend    ← analyze-dynamo-schema, analyze-graphql-schema, ...
+@ftarganski/omni-ai/skills/frontend   ← analyze-component, analyze-module-structure, ...
+@ftarganski/omni-ai/skills/qa         ← analyze-test-coverage, find-test-pattern
+@ftarganski/omni-ai/memory       ← SQLiteMemoryStore, InMemoryStore, compactors, VectorIndex
+@ftarganski/omni-ai/mcp          ← createMcpServer, connectMcpSkills, McpSkill
+@ftarganski/omni-ai/provider-anthropic  ← AnthropicProvider
+@ftarganski/omni-ai/provider-openai     ← OpenAIProvider (+ Copilot, Groq, Ollama)
+@ftarganski/omni-ai/provider-google     ← GoogleProvider
+bin: omni                        ← CLI completo
 ```
 
-`@omni-ai/core` não tem dependências internas — é a base estável do framework. Todos os outros pacotes dependem apenas dele, sem dependências cruzadas entre si.
+Internamente o repositório é um monorepo com pacotes separados (`packages/core`, `packages/skills`, etc.) que são bundlados pelo tsup no pacote único publicado.
 
 ---
 
@@ -1372,7 +1383,7 @@ pnpm lint
 # Rodar testes
 pnpm test
 
-# Build de um pacote específico
+# Build de um pacote interno específico
 pnpm --filter @omni-ai/core build
 
 # Reconstruir e testar o CLI
@@ -1385,15 +1396,18 @@ pnpm build && omni list agents
 
 ### Concluído
 
-**Pacotes**
-- [x] `@omni-ai/core` — interfaces, ProviderRegistry, SkillRegistry, config schema (Zod), `parallel()`, `SkillMiddleware`
-- [x] `@omni-ai/memory` — InMemoryStore, SQLiteMemoryStore, SemanticMemoryStore, VectorIndex, ObservationMaskingCompactor, SummaryCompactor
-- [x] `@omni-ai/mcp` — servidor MCP (expõe skills como tools) e cliente MCP (`McpSkill`, `connectMcpSkills`)
-- [x] `@omni-ai/provider-anthropic` — adapter completo com mapeamento de tipos, tool use e streaming
-- [x] `@omni-ai/provider-openai` — cobre OpenAI, GitHub Copilot, Groq, Ollama e qualquer endpoint OpenAI-compatible
-- [x] `@omni-ai/provider-google` — adapter Google Gemini com chat, vision e embeddings
-- [x] `@omni-ai/skills` — 20 skills em 8 subpaths: fs, code, ux, git, http, multimodal, backend, frontend, qa
-- [x] `@omni-ai/cli` — `omni run`, `omni list`, `omni chain`, `omni init`, `omni new`, `omni serve`, `omni watch`, `omni eval`, `omni export`, `omni mcp serve`
+**Pacote publicado**
+- [x] `@ftarganski/omni-ai` — pacote único com todos os subpaths, bin `omni`, bundlado via tsup
+
+**Internamente (monorepo, não publicados)**
+- [x] core — interfaces, ProviderRegistry, SkillRegistry, config schema (Zod), `parallel()`, `SkillMiddleware`
+- [x] memory — InMemoryStore, SQLiteMemoryStore, SemanticMemoryStore, VectorIndex, ObservationMaskingCompactor, SummaryCompactor
+- [x] mcp — servidor MCP (expõe skills como tools) e cliente MCP (`McpSkill`, `connectMcpSkills`)
+- [x] provider-anthropic — adapter completo com mapeamento de tipos, tool use e streaming
+- [x] provider-openai — cobre OpenAI, GitHub Copilot, Groq, Ollama e qualquer endpoint OpenAI-compatible
+- [x] provider-google — adapter Google Gemini com chat, vision e embeddings
+- [x] skills — 20 skills em 8 subpaths: fs, code, ux, git, http, multimodal, backend, frontend, qa
+- [x] cli — `omni run`, `omni list`, `omni chain`, `omni init`, `omni new`, `omni serve`, `omni watch`, `omni eval`, `omni export`, `omni mcp serve`
 
 **Core**
 - [x] Bootstrap `createRuntime()` — API de alto nível para uso programático
