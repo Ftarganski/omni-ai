@@ -1,3 +1,4 @@
+import { composeMiddleware } from "../middleware/compose.js";
 import {
   type AgentConfig,
   type AgentRunOptions,
@@ -130,7 +131,9 @@ export class Agent implements IAgent {
     const skill = this.skills.get(call.name);
     if (!skill) return `Error: skill "${call.name}" not found`;
     try {
-      const result = await skill.execute(call.arguments, ctx);
+      const middleware = this.config.middleware ?? [];
+      const wrapped = composeMiddleware(middleware, skill);
+      const result = await wrapped.execute(call.arguments, ctx);
       return typeof result === "string" ? result : JSON.stringify(result);
     } catch (err) {
       return `Error: ${err instanceof Error ? err.message : String(err)}`;
