@@ -40,11 +40,9 @@ if (dirty) {
   process.exit(1);
 }
 
-// Atualiza main antes de criar o branch
-try {
-  execSync("git rev-parse --abbrev-ref @{u}", { stdio: "pipe" });
-  execSync("git pull --ff-only", { stdio: "inherit" });
-} catch { /* sem upstream configurado — ignora */ }
+// Garante que a branch de release parte sempre da main atualizada
+execSync("git checkout main", { stdio: "inherit" });
+execSync("git pull --ff-only origin main", { stdio: "inherit" });
 
 // Bump de versão
 const prev = pkg.version;
