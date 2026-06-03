@@ -83,7 +83,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "lint": "biome check src/",
-    "prepack": "node -e \"require('fs').copyFileSync('../../README.md', './README.md')\"",
+    "prepack": "node -e \"require('fs').copyFileSync('../../README.npm.md', './README.md')\"",
     "postpack": "node -e \"try{require('fs').unlinkSync('./README.md')}catch(e){}\""
   },
   "dependencies": {
