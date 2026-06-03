@@ -1480,6 +1480,6 @@ O pacote referenciado não foi buildado ainda. Execute `pnpm build` na raiz para
 
 ---
 
-## Licença
+## License
 
-MIT
+MIT — © [Francis Targanski](https://targanski.com)
