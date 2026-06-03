@@ -1390,6 +1390,16 @@ pnpm --filter @omni-ai/core build
 pnpm build && omni list agents
 ```
 
+### Publicar uma nova versão
+
+```bash
+pnpm release          # patch: 1.0.0 → 1.0.1
+pnpm release minor    # minor: 1.0.0 → 1.1.0
+pnpm release major    # major: 1.0.0 → 2.0.0
+```
+
+O script cria a branch `release/x.x.x`, commita o bump de versão e abre o PR para `main`. Ao mergear, o GitHub Actions publica automaticamente no npm e cria a GitHub Release.
+
 ---
 
 ## Roadmap
