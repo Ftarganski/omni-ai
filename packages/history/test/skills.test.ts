@@ -2,8 +2,10 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { searchHistorySkill, showEventSkill } from "../src/skills.js";
+import { encodeProjectScope, searchHistorySkill, showEventSkill } from "../src/skills.js";
 import { HistoryStore } from "../src/store.js";
+
+const ownScope = encodeProjectScope(process.cwd());
 
 let root: string;
 let dbPath: string;
@@ -40,6 +42,17 @@ beforeEach(async () => {
     events: [{ role: "user", content: "project B: rotate the API key too", ordinal: 0, timestamp: 1 }],
     citations: [{ sourcePath: "b.jsonl", sourceLine: 1 }],
   });
+  store.saveImportResult("claude-code", "claude-code:own:s3", {
+    session: {
+      id: "claude-code:own:s3",
+      provider: "claude-code",
+      sourceSessionId: "s3",
+      importedAt: 1,
+      scope: ownScope,
+    },
+    events: [{ role: "user", content: "own project: rotate the API key locally", ordinal: 0, timestamp: 1 }],
+    citations: [{ sourcePath: "c.jsonl", sourceLine: 1 }],
+  });
   store.close();
 });
 
@@ -58,6 +71,12 @@ describe("searchHistorySkill", () => {
   it("searches every project when allProjects is set", async () => {
     const result = await searchHistorySkill.execute({ query: '"rotate"', allProjects: true }, ctx);
     expect(result.hits.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("defaults scope to the caller's own project (derived from cwd) when none is given", async () => {
+    const result = await searchHistorySkill.execute({ query: '"rotate"' }, ctx);
+    expect(result.scope).toBe(ownScope);
+    expect(result.hits.every((h) => h.session.scope === ownScope)).toBe(true);
   });
 });
 
@@ -79,5 +98,44 @@ describe("showEventSkill", () => {
 
     const result = await showEventSkill.execute({ eventId: otherProjectEvent.id, allProjects: true }, ctx);
     expect(result.events.length).toBeGreaterThan(0);
+  });
+
+  it("shows an event without allProjects when its scope matches the caller's own project", async () => {
+    const store = new HistoryStore({ path: dbPath });
+    const ownEvent = store.search('"locally"', { scope: ownScope })[0].event;
+    store.close();
+
+    const result = await showEventSkill.execute({ eventId: ownEvent.id, allProjects: false }, ctx);
+    expect(result.events.length).toBeGreaterThan(0);
+  });
+
+  it("returns no events for an eventId that doesn't exist", async () => {
+    const result = await showEventSkill.execute({ eventId: 999_999, allProjects: false }, ctx);
+    expect(result.events).toEqual([]);
+  });
+});
+
+describe("defaultHistoryDbPath fallback", () => {
+  it("falls back to USERPROFILE, then to a cwd-relative path, without throwing", async () => {
+    const cwdBefore = process.cwd();
+    const tmpCwd = await mkdtemp(join(tmpdir(), "omni-history-fallback-cwd-"));
+    const savedHome = process.env.HOME;
+    const savedProfile = process.env.USERPROFILE;
+    process.chdir(tmpCwd);
+    delete process.env.HOME;
+    process.env.USERPROFILE = tmpCwd;
+    try {
+      const result = await searchHistorySkill.execute({ query: '"anything"', scope: "unused" }, ctx);
+      expect(result.hits).toEqual([]);
+
+      delete process.env.USERPROFILE;
+      const resultNoEnv = await searchHistorySkill.execute({ query: '"anything"', scope: "unused" }, ctx);
+      expect(resultNoEnv.hits).toEqual([]);
+    } finally {
+      process.env.HOME = savedHome;
+      process.env.USERPROFILE = savedProfile;
+      process.chdir(cwdBefore);
+      await rm(tmpCwd, { recursive: true, force: true });
+    }
   });
 });

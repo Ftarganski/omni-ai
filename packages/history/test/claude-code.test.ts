@@ -143,4 +143,104 @@ describe("ClaudeCodeHistoryParser + HistoryStore", () => {
       store.close();
     }
   });
+
+  it("extracts tool_use/tool_result blocks, skips unknown block types, and handles a missing text field", async () => {
+    await writeFile(
+      join(root, "tools.jsonl"),
+      JSON.stringify({
+        type: "assistant",
+        timestamp: "2026-01-01T00:00:00.000Z",
+        message: {
+          role: "assistant",
+          content: [
+            { type: "tool_use", name: "Bash", input: { command: "ls" } },
+            { type: "tool_result", content: "file1\nfile2" },
+            { type: "tool_result", content: { ok: true } },
+            { type: "thinking" },
+            { type: "text" },
+          ],
+        },
+      }),
+      "utf-8"
+    );
+
+    const parser = new ClaudeCodeHistoryParser({ root });
+    const [source] = await parser.discover();
+    const results = await parser.import(source);
+    const toolsEvent = results.flatMap((r) => r.events).find((e) => e.toolName === "Bash");
+
+    expect(toolsEvent).toBeDefined();
+    expect(toolsEvent?.content).toContain("[tool_use:Bash]");
+    expect(toolsEvent?.content).toContain("file1\nfile2");
+    expect(toolsEvent?.content).toContain('{"ok":true}');
+  });
+
+  it("falls back to type/'user' for role and Date.now() for timestamp when both are missing", async () => {
+    await writeFile(
+      join(root, "no-role.jsonl"),
+      JSON.stringify({ type: "user", message: { content: "no role or timestamp field" } }),
+      "utf-8"
+    );
+
+    const parser = new ClaudeCodeHistoryParser({ root });
+    const [source] = await parser.discover();
+    const results = await parser.import(source);
+    const event = results.flatMap((r) => r.events).find((e) => e.content === "no role or timestamp field");
+
+    expect(event?.role).toBe("user");
+    expect(event?.timestamp).toBeGreaterThan(0);
+  });
+
+  it("skips entries whose type isn't user/assistant even when message is present", async () => {
+    await writeFile(
+      join(root, "system.jsonl"),
+      JSON.stringify({ type: "system", message: { role: "system", content: "should be ignored" } }),
+      "utf-8"
+    );
+
+    const parser = new ClaudeCodeHistoryParser({ root });
+    const [source] = await parser.discover();
+    const results = await parser.import(source);
+    expect(results.flatMap((r) => r.events).some((e) => e.content === "should be ignored")).toBe(false);
+  });
+
+  it("excludes a file from results entirely when every line is invalid or empty", async () => {
+    await writeFile(
+      join(root, "empty-session.jsonl"),
+      [
+        "not json at all",
+        JSON.stringify({ type: "user", message: { role: "user", content: "" } }),
+        JSON.stringify({ type: "summary", message: undefined }),
+      ].join("\n"),
+      "utf-8"
+    );
+
+    const parser = new ClaudeCodeHistoryParser({ root });
+    const [source] = await parser.discover();
+    const results = await parser.import(source);
+    expect(results.some((r) => r.session.sourceSessionId === "empty-session")).toBe(false);
+  });
+
+  it("reports not importable when the root path exists but is a file, not a directory", async () => {
+    const filePath = join(root, "not-a-dir.txt");
+    await writeFile(filePath, "hi", "utf-8");
+    const parser = new ClaudeCodeHistoryParser({ root: filePath });
+    const sources = await parser.discover();
+    expect(sources[0]).toMatchObject({ importable: false, reason: "path is not a directory" });
+  });
+
+  it("skips a project subdirectory that has no .jsonl transcripts", async () => {
+    await mkdir(join(root, "empty-project"));
+    await writeFile(join(root, "empty-project", "notes.txt"), "hi", "utf-8");
+
+    const parser = new ClaudeCodeHistoryParser({ root });
+    const sources = await parser.discover();
+    expect(sources.some((s) => s.scope === "empty-project")).toBe(false);
+  });
+
+  it("defaults to defaultClaudeCodeRoot() when no root option is given", async () => {
+    const parser = new ClaudeCodeHistoryParser();
+    const sources = await parser.discover();
+    expect(Array.isArray(sources)).toBe(true);
+  });
 });

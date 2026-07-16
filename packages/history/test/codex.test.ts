@@ -63,4 +63,49 @@ describe("CodexHistoryParser + HistoryStore", () => {
       store.close();
     }
   });
+
+  it("falls back to filename for sourceSessionId, 'user' for role, no scope, and Date.now() when timestamp/id/cwd are absent", async () => {
+    await writeFile(
+      join(root, "no-metadata.json"),
+      JSON.stringify({ messages: [{ content: "message with no role, timestamp, id or cwd" }] }),
+      "utf-8"
+    );
+
+    const parser = new CodexHistoryParser({ root });
+    const [source] = await parser.discover();
+    const results = await parser.import(source);
+    const result = results.find((r) => r.session.sourceSessionId === "no-metadata");
+
+    expect(result).toBeDefined();
+    expect(result?.session.scope).toBeUndefined();
+    expect(result?.events[0].role).toBe("user");
+    expect(result?.events[0].timestamp).toBeGreaterThan(0);
+  });
+
+  it("treats a missing/non-array messages field as no messages, excluding the file from results", async () => {
+    await writeFile(join(root, "no-messages.json"), JSON.stringify({ id: "no-messages" }), "utf-8");
+
+    const parser = new CodexHistoryParser({ root });
+    const [source] = await parser.discover();
+    const results = await parser.import(source);
+    expect(results.some((r) => r.session.sourceSessionId === "no-messages")).toBe(false);
+  });
+
+  it("reports not importable when root is a file, and when the directory has no session files", async () => {
+    const filePath = join(root, "not-a-dir.txt");
+    await writeFile(filePath, "hi", "utf-8");
+    const fileParser = new CodexHistoryParser({ root: filePath });
+    expect((await fileParser.discover())[0]).toMatchObject({ importable: false, reason: "path is not a directory" });
+
+    const emptyRoot = join(root, "empty");
+    await import("node:fs/promises").then((fs) => fs.mkdir(emptyRoot));
+    const emptyParser = new CodexHistoryParser({ root: emptyRoot });
+    expect((await emptyParser.discover())[0].importable).toBe(false);
+  });
+
+  it("defaults to defaultCodexRoot() when no root option is given", async () => {
+    const parser = new CodexHistoryParser();
+    const sources = await parser.discover();
+    expect(Array.isArray(sources)).toBe(true);
+  });
 });
