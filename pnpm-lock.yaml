@@ -44,6 +44,9 @@ importers:
       '@omni-ai/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@omni-ai/history':
+        specifier: workspace:*
+        version: link:../../packages/history
       '@omni-ai/mcp':
         specifier: workspace:*
         version: link:../../packages/mcp
@@ -117,6 +120,9 @@ importers:
       '@omni-ai/core':
         specifier: workspace:*
         version: link:../core
+      '@omni-ai/history':
+        specifier: workspace:*
+        version: link:../history
       '@omni-ai/mcp':
         specifier: workspace:*
         version: link:../mcp
@@ -176,6 +182,28 @@ importers:
         specifier: ^3.24.0
         version: 3.25.76
     devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.19
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/history:
+    dependencies:
+      '@omni-ai/core':
+        specifier: workspace:*
+        version: link:../core
+      better-sqlite3:
+        specifier: ^11.0.0
+        version: 11.10.0
+      glob:
+        specifier: ^11.0.0
+        version: 11.1.0
+    devDependencies:
+      '@types/better-sqlite3':
+        specifier: ^7.6.0
+        version: 7.6.13
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.19

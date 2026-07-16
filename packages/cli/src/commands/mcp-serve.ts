@@ -1,3 +1,4 @@
+import { searchHistorySkill, showEventSkill } from "@omni-ai/history";
 import { serveStdioMcp } from "@omni-ai/mcp";
 import {
   analyzeDynamoSchemaSkill,
@@ -40,6 +41,8 @@ const skills = [
   analyzeModuleStructureSkill,
   findTestPatternSkill,
   analyzeTestCoverageSkill,
+  searchHistorySkill,
+  showEventSkill,
 ];
 
 export async function mcpServeCommand(): Promise<void> {
