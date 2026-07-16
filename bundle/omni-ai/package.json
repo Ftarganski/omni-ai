@@ -52,6 +52,10 @@
       "import": "./dist/memory.js",
       "types": "./dist/memory.d.ts"
     },
+    "./history": {
+      "import": "./dist/history.js",
+      "types": "./dist/history.d.ts"
+    },
     "./mcp": {
       "import": "./dist/mcp.js",
       "types": "./dist/mcp.d.ts"
@@ -89,6 +93,7 @@
   "dependencies": {
     "@omni-ai/cli": "workspace:*",
     "@omni-ai/core": "workspace:*",
+    "@omni-ai/history": "workspace:*",
     "@omni-ai/memory": "workspace:*",
     "@omni-ai/mcp": "workspace:*",
     "@omni-ai/provider-anthropic": "workspace:*",
