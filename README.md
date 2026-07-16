@@ -368,6 +368,30 @@ omni export dev1:customers --format json --output session.json
 
 ---
 
+### `omni history`
+
+Importa, normaliza e torna pesquisável o histórico local de outros harnesses de agente (Claude Code, Codex, ...) — local-only, sem chamadas de rede ou de LLM. Detalhes completos, incluindo o modelo de isolamento por projeto (scope), em [`docs/history.md`](docs/history.md).
+
+```bash
+omni history sources [--json]                       # o que existe na máquina, por provider
+omni history import --provider claude-code           # import explícito de um provider
+omni history import --all                             # import de todos os providers registrados
+omni history search "retry handling"                  # busca full-text, escopada ao projeto atual
+omni history show event <id> [--window 3]
+omni history show session <sessionId> [--format markdown --out session.md]
+omni history locate event <id>                        # aponta para o arquivo/linha original
+omni history doctor                                    # diagnóstico: sources/citations quebradas
+```
+
+**Isolamento por projeto:** em uma máquina com vários projetos/clientes, `omni history search` restringe por padrão ao projeto do diretório atual — histórico de outro projeto nunca aparece sem `--all-projects` explícito. O mesmo vale para as skills MCP (`search-history`, `show-history-event`).
+
+```bash
+# Buscar em todos os projetos importados, não só o atual
+omni history search "retry handling" --all-projects
+```
+
+---
+
 ### `omni mcp serve`
 
 Expõe todas as skills registradas como ferramentas MCP sobre stdio. Permite que clientes MCP (como Claude Desktop) chamem as skills diretamente.
@@ -376,7 +400,7 @@ Expõe todas as skills registradas como ferramentas MCP sobre stdio. Permite que
 omni mcp serve
 ```
 
-O servidor usa o transporte **stdio** — adequado para ser iniciado como subprocesso por um cliente MCP.
+O servidor usa o transporte **stdio** — adequado para ser iniciado como subprocesso por um cliente MCP. Inclui também `search-history` e `show-history-event` (`@omni-ai/history`), que permitem a um agente consultar histórico já importado — escopadas ao projeto atual por padrão (ver [`docs/history.md`](docs/history.md)).
 
 **Configuração no Claude Desktop (`claude_desktop_config.json`):**
 
@@ -953,6 +977,16 @@ omni-ai/
 │   │       ├── vector.ts              # VectorIndex + cosineSimilarity
 │   │       └── utils.ts               # estimateTokens() compartilhado
 │   │
+│   ├── history/                       # @omni-ai/history
+│   │   └── src/
+│   │       ├── types.ts               # HistorySource/Session/Event/Citation, IHistoryParser
+│   │       ├── store.ts               # HistoryStore (SQLite, FTS5, scope por projeto)
+│   │       ├── registry.ts            # HistoryParserRegistry
+│   │       ├── skills.ts              # searchHistorySkill, showEventSkill (escopadas)
+│   │       └── parsers/
+│   │           ├── claude-code.ts     # JSONL transcript tree, scope por subdiretório
+│   │           └── codex.ts           # 1 arquivo JSON por sessão, scope pelo campo cwd
+│   │
 │   ├── skills-fs/                     # @omni-ai/skills-fs
 │   │   └── src/
 │   │       ├── read-file.ts           # Lê arquivo (com validação de path traversal)
@@ -974,7 +1008,8 @@ omni-ai/
 │           │   ├── run.ts             # omni run <agent> "<prompt>"
 │           │   ├── chain.ts           # omni chain "<prompt>" <agent1> <agent2>...
 │           │   ├── list.ts            # omni list agents|skills|providers
-│           │   └── init.ts            # omni init — wizard interativo
+│           │   ├── init.ts            # omni init — wizard interativo
+│           │   └── history/           # omni history sources|import|search|show|locate|doctor
 │           └── utils/
 │               ├── format.ts          # Output formatado (tokens, iterações, erros)
 │               └── config-path.ts     # Resolve caminho do omni-ai.yaml
@@ -986,6 +1021,7 @@ omni-ai/
 │   └── qa/                            # 4 agentes QA
 │
 ├── docs/                              # Documentação
+│   ├── history.md                     # @omni-ai/history — schema, IHistoryParser, scope por projeto
 │   ├── providers/
 │   │   ├── anthropic.md               # Setup detalhado Anthropic
 │   │   ├── openai.md                  # Setup detalhado OpenAI
@@ -1354,6 +1390,7 @@ O npm publica um único pacote com subpath exports:
 @ftarganski/omni-ai/skills/frontend   ← analyze-component, analyze-module-structure, ...
 @ftarganski/omni-ai/skills/qa         ← analyze-test-coverage, find-test-pattern
 @ftarganski/omni-ai/memory       ← SQLiteMemoryStore, InMemoryStore, compactors, VectorIndex
+@ftarganski/omni-ai/history      ← HistoryStore, IHistoryParser, searchHistorySkill, showEventSkill
 @ftarganski/omni-ai/mcp          ← createMcpServer, connectMcpSkills, McpSkill
 @ftarganski/omni-ai/provider-anthropic  ← AnthropicProvider
 @ftarganski/omni-ai/provider-openai     ← OpenAIProvider (+ Copilot, Groq, Ollama)
@@ -1417,7 +1454,8 @@ O script cria a branch `release/x.x.x`, commita o bump de versão e abre o PR pa
 - [x] provider-openai — cobre OpenAI, GitHub Copilot, Groq, Ollama e qualquer endpoint OpenAI-compatible
 - [x] provider-google — adapter Google Gemini com chat, vision e embeddings
 - [x] skills — 20 skills em 8 subpaths: fs, code, ux, git, http, multimodal, backend, frontend, qa
-- [x] cli — `omni run`, `omni list`, `omni chain`, `omni init`, `omni new`, `omni serve`, `omni watch`, `omni eval`, `omni export`, `omni mcp serve`
+- [x] history — `@omni-ai/history`: import/normalização/busca de histórico de outros harnesses (Claude Code, Codex), com isolamento por projeto (scope) e 2 skills MCP
+- [x] cli — `omni run`, `omni list`, `omni chain`, `omni init`, `omni new`, `omni serve`, `omni watch`, `omni eval`, `omni export`, `omni mcp serve`, `omni history sources|import|search|show|locate|doctor`
 
 **Core**
 - [x] Bootstrap `createRuntime()` — API de alto nível para uso programático

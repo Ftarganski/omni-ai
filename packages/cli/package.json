@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@omni-ai/core": "workspace:*",
+    "@omni-ai/history": "workspace:*",
     "@omni-ai/mcp": "workspace:*",
     "@omni-ai/provider-anthropic": "workspace:*",
     "@omni-ai/provider-google": "workspace:*",

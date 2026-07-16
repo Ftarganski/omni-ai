@@ -15,6 +15,7 @@ export default defineConfig([
       "skills/frontend": "src/skills/frontend.ts",
       "skills/qa": "src/skills/qa.ts",
       memory: "src/memory.ts",
+      history: "src/history.ts",
       mcp: "src/mcp.ts",
       "provider-anthropic": "src/provider-anthropic.ts",
       "provider-openai": "src/provider-openai.ts",

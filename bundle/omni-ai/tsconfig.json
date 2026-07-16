@@ -10,6 +10,7 @@
       "@omni-ai/core": ["../core/src/index.ts"],
       "@omni-ai/cli": ["../cli/src/bin.ts"],
       "@omni-ai/memory": ["../memory/src/index.ts"],
+      "@omni-ai/history": ["../history/src/index.ts"],
       "@omni-ai/mcp": ["../mcp/src/index.ts"],
       "@omni-ai/provider-anthropic": ["../provider-anthropic/src/index.ts"],
       "@omni-ai/provider-google": ["../provider-google/src/index.ts"],

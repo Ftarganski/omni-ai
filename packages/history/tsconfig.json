@@ -6,10 +6,5 @@
     "rootDir": "./src"
   },
   "include": ["src"],
-  "references": [
-    { "path": "../core" },
-    { "path": "../history" },
-    { "path": "../memory" },
-    { "path": "../skills" }
-  ]
+  "references": [{ "path": "../core" }]
 }
