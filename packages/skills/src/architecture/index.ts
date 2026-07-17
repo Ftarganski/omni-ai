@@ -5,3 +5,5 @@ export type {
   DependencyGraphAnalysis,
 } from "./analyze-dependency-graph.js";
 export { analyzeDependencyGraphSkill } from "./analyze-dependency-graph.js";
+export type { GenerateAdrInput, GenerateAdrOutput } from "./generate-adr.js";
+export { generateAdrSkill } from "./generate-adr.js";
