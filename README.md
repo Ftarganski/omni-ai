@@ -740,6 +740,12 @@ agents/backend/backend-dev.yaml
 | `qa-ux` | `agents/qa/qa-ux.yaml` | Valida UX: feedback states, formulários, motion, content tone |
 | `qa-backend` | `agents/qa/qa-backend.yaml` | Valida NestJS: services, resolvers, schema GraphQL, listeners, testes |
 
+### Arquitetura (1 agente)
+
+| Agente | Arquivo | O que faz |
+|--------|---------|-----------|
+| `architecture-review` | `agents/architecture/architecture-review.yaml` | Revisa acoplamento excessivo, ciclos e violações de camada antes do merge |
+
 ---
 
 ## Skills disponíveis
@@ -810,6 +816,19 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 |-------|-----------|
 | `find-test-pattern` | Localiza padrões em arquivos de teste |
 | `analyze-test-coverage` | Analisa cobertura de testes por módulo |
+
+**Arquitetura (`@ftarganski/omni-ai/skills/architecture`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `generate-adr` | Gera um Architecture Decision Record em markdown a partir de contexto/alternativas/decisão |
+
+**Segurança (`@ftarganski/omni-ai/skills/security`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `scan-owasp-patterns` | Varre um arquivo/diff em busca de padrões de vulnerabilidade OWASP Top 10 |
+| `generate-security-report` | Consolida achados de audit-dependencies/scan-secrets/scan-owasp-patterns num relatório único |
 
 ### Segurança das skills de filesystem
 
