@@ -796,6 +796,8 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 | `analyze-nestjs-module` | Analisa estrutura de módulos NestJS |
 | `analyze-dynamo-schema` | Analisa schemas DynamoDB/TableService |
 | `analyze-graphql-schema` | Analisa schemas GraphQL |
+| `analyze-api-contract` | Compara schema OpenAPI/GraphQL declarado contra a implementação — rotas não documentadas e campos órfãos |
+| `analyze-migration-safety` | Revisa uma migration em busca de operações bloqueantes ou irreversíveis em tabelas grandes |
 
 **Frontend (`@ftarganski/omni-ai/skills/frontend`)**
 
@@ -812,6 +814,8 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 |-------|-----------|
 | `find-test-pattern` | Localiza padrões em arquivos de teste |
 | `analyze-test-coverage` | Analisa cobertura de testes por módulo |
+| `run-tests` | Executa a suíte de testes (jest/vitest) e reporta pass/fail por arquivo + coverage/coverage delta |
+| `generate-test-stub` | Gera esqueleto de teste a partir de função/componente, seguindo o padrão de um teste real existente |
 
 **Segurança (`@ftarganski/omni-ai/skills/security`)**
 
