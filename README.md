@@ -760,6 +760,8 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 |-------|-----------|
 | `search-code` | Busca texto ou regex em arquivos TypeScript/TSX |
 | `find-unused-exports` | Detecta exports nunca referenciados em outro arquivo do diretório/monorepo |
+| `analyze-ci-config` | Lê um workflow de CI e sinaliza gaps (cache, timeout, steps duplicados) |
+| `analyze-error-logs` | Correlaciona um stack trace com o código-fonte real para apontar a causa provável |
 
 **UX (`@ftarganski/omni-ai/skills/ux`)**
 
@@ -775,6 +777,7 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 | `git-diff` | Retorna o diff de um arquivo ou do repositório |
 | `git-log` | Lista commits recentes com autoria e mensagem |
 | `git-commit-message` | Gera mensagem de commit a partir de um diff (chamada LLM) |
+| `generate-changelog` | Deriva um changelog a partir do histórico de commits, agrupado por Conventional Commits |
 
 **HTTP (`@ftarganski/omni-ai/skills/http`)**
 
@@ -823,6 +826,12 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 |-------|-----------|
 | `audit-dependencies` | Roda auditoria de dependências (npm/pnpm audit) e resume vulnerabilidades por severidade |
 | `scan-secrets` | Varre texto/diff/arquivo em busca de padrões de credenciais antes do commit (achados sempre mascarados) |
+
+**Arquitetura (`@ftarganski/omni-ai/skills/architecture`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `analyze-dependency-graph` | Mapeia o grafo de dependências entre módulos e aponta acoplamento excessivo ou ciclos |
 
 ### Segurança das skills de filesystem
 
