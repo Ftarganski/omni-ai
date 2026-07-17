@@ -759,6 +759,7 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 | Skill | O que faz |
 |-------|-----------|
 | `search-code` | Busca texto ou regex em arquivos TypeScript/TSX |
+| `find-unused-exports` | Detecta exports nunca referenciados em outro arquivo do diretório/monorepo |
 
 **UX (`@ftarganski/omni-ai/skills/ux`)**
 
@@ -803,6 +804,7 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 | `find-component-pattern` | Localiza padrões em componentes React/TSX |
 | `analyze-component` | Analisa props, hooks e estrutura de componentes |
 | `analyze-module-structure` | Analisa a estrutura de módulos frontend |
+| `analyze-bundle-size` | Lê um metafile do bundler e reporta os maiores contribuintes de tamanho, para sugerir code-splitting |
 
 **QA (`@ftarganski/omni-ai/skills/qa`)**
 
@@ -810,6 +812,13 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 |-------|-----------|
 | `find-test-pattern` | Localiza padrões em arquivos de teste |
 | `analyze-test-coverage` | Analisa cobertura de testes por módulo |
+
+**Segurança (`@ftarganski/omni-ai/skills/security`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `audit-dependencies` | Roda auditoria de dependências (npm/pnpm audit) e resume vulnerabilidades por severidade |
+| `scan-secrets` | Varre texto/diff/arquivo em busca de padrões de credenciais antes do commit (achados sempre mascarados) |
 
 ### Segurança das skills de filesystem
 
