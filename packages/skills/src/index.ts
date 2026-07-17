@@ -1,3 +1,4 @@
+export * from "./architecture/index.js";
 export * from "./backend/index.js";
 export * from "./code/index.js";
 export * from "./frontend/index.js";
@@ -6,4 +7,5 @@ export * from "./git/index.js";
 export * from "./http/index.js";
 export * from "./multimodal/index.js";
 export * from "./qa/index.js";
+export * from "./security/index.js";
 export * from "./ux/index.js";

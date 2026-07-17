@@ -740,11 +740,19 @@ agents/backend/backend-dev.yaml
 | `qa-ux` | `agents/qa/qa-ux.yaml` | Valida UX: feedback states, formulários, motion, content tone |
 | `qa-backend` | `agents/qa/qa-backend.yaml` | Valida NestJS: services, resolvers, schema GraphQL, listeners, testes |
 
-### Arquitetura (1 agente)
+### Arquitetura (2 agentes)
 
 | Agente | Arquivo | O que faz |
 |--------|---------|-----------|
 | `architecture-review` | `agents/architecture/architecture-review.yaml` | Revisa acoplamento excessivo, ciclos e violações de camada antes do merge |
+| `architecture-adr` | `agents/architecture/architecture-adr.yaml` | Gera Architecture Decision Records a partir do contexto de uma decisão de design |
+
+### Segurança (2 agentes)
+
+| Agente | Arquivo | O que faz |
+|--------|---------|-----------|
+| `security-review` | `agents/security/security-review.yaml` | Audita código gerado contra padrões OWASP Top 10 e credenciais vazadas |
+| `security-deps` | `agents/security/security-deps.yaml` | Roda auditoria de dependências e propõe plano de remediação priorizado por severidade |
 
 ---
 
@@ -1430,6 +1438,8 @@ O npm publica um único pacote com subpath exports:
 @ftarganski/omni-ai/skills/backend    ← analyze-dynamo-schema, analyze-graphql-schema, ...
 @ftarganski/omni-ai/skills/frontend   ← analyze-component, analyze-module-structure, ...
 @ftarganski/omni-ai/skills/qa         ← analyze-test-coverage, find-test-pattern
+@ftarganski/omni-ai/skills/architecture ← analyze-dependency-graph, generate-adr
+@ftarganski/omni-ai/skills/security     ← audit-dependencies, scan-secrets, scan-owasp-patterns, generate-security-report
 @ftarganski/omni-ai/memory       ← SQLiteMemoryStore, InMemoryStore, compactors, VectorIndex
 @ftarganski/omni-ai/history      ← HistoryStore, IHistoryParser, searchHistorySkill, showEventSkill
 @ftarganski/omni-ai/mcp          ← createMcpServer, connectMcpSkills, McpSkill

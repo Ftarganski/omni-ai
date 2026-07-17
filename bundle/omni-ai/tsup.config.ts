@@ -14,6 +14,8 @@ export default defineConfig([
       "skills/backend": "src/skills/backend.ts",
       "skills/frontend": "src/skills/frontend.ts",
       "skills/qa": "src/skills/qa.ts",
+      "skills/architecture": "src/skills/architecture.ts",
+      "skills/security": "src/skills/security.ts",
       memory: "src/memory.ts",
       history: "src/history.ts",
       mcp: "src/mcp.ts",

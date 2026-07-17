@@ -8,6 +8,10 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./architecture": {
+      "import": "./dist/architecture/index.js",
+      "types": "./dist/architecture/index.d.ts"
+    },
     "./backend": {
       "import": "./dist/backend/index.js",
       "types": "./dist/backend/index.d.ts"
@@ -43,6 +47,10 @@
     "./multimodal": {
       "import": "./dist/multimodal/index.js",
       "types": "./dist/multimodal/index.d.ts"
+    },
+    "./security": {
+      "import": "./dist/security/index.js",
+      "types": "./dist/security/index.d.ts"
     }
   },
   "private": true,
