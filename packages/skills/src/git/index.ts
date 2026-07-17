@@ -1,3 +1,5 @@
+export type { ChangelogSection, GenerateChangelogInput, GenerateChangelogOutput } from "./generate-changelog.js";
+export { generateChangelogSkill } from "./generate-changelog.js";
 export type { GitCommitMessageInput, GitCommitMessageOutput } from "./git-commit-message.js";
 export { gitCommitMessageSkill } from "./git-commit-message.js";
 export type { GitDiffInput, GitDiffOutput } from "./git-diff.js";
