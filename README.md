@@ -773,9 +773,9 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 | Skill | O que faz |
 |-------|-----------|
 | `search-code` | Busca texto ou regex em arquivos TypeScript/TSX |
-| `find-unused-exports` | Detecta exports nunca referenciados em outro arquivo do diretório/monorepo |
 | `analyze-ci-config` | Lê um workflow de CI e sinaliza gaps (cache, timeout, steps duplicados) |
 | `analyze-error-logs` | Correlaciona um stack trace com o código-fonte real para apontar a causa provável |
+| `find-unused-exports` | Detecta exports nunca referenciados em outro arquivo do diretório/monorepo |
 
 **UX (`@ftarganski/omni-ai/skills/ux`)**
 
