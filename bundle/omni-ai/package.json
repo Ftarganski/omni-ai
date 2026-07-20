@@ -48,6 +48,14 @@
       "import": "./dist/skills/qa.js",
       "types": "./dist/skills/qa.d.ts"
     },
+    "./skills/architecture": {
+      "import": "./dist/skills/architecture.js",
+      "types": "./dist/skills/architecture.d.ts"
+    },
+    "./skills/security": {
+      "import": "./dist/skills/security.js",
+      "types": "./dist/skills/security.d.ts"
+    },
     "./memory": {
       "import": "./dist/memory.js",
       "types": "./dist/memory.d.ts"
