@@ -24,8 +24,8 @@
 ## Why omni-ai
 
 - **Provider-agnostic** — swap LLM providers with one line in your config, no code changes
-- **21 ready-made agents** — backend (NestJS), frontend (React), UX audit, QA validation
-- **Composable skills** — 20+ tools (filesystem, git, HTTP, accessibility audit, image analysis) that agents call as needed
+- **25 ready-made agents** — backend (NestJS), frontend (React), UX audit, QA validation, architecture review, security review
+- **Composable skills** — 35+ tools (filesystem, git, HTTP, accessibility audit, image analysis, dependency/OWASP/secret scanning, ADR generation) that agents call as needed
 - **Session memory** — SQLite-backed persistent sessions with semantic search and token compaction
 - **Third-party agent history** — import and search local history from Claude Code and Codex, scoped to your current project by default
 - **Extensible** — define custom agents in YAML, skills in TypeScript, providers via `IProvider`
@@ -258,7 +258,7 @@ Tokens: 18,400 input · 5,200 output · ~$0.084
 
 ---
 
-## Built-in Agents (21)
+## Built-in Agents (25)
 
 ### Backend — NestJS / TypeScript (7 agents)
 
@@ -301,6 +301,20 @@ Tokens: 18,400 input · 5,200 output · ~$0.084
 | `qa-ux` | Validates UX: feedback states, forms, motion, content tone |
 | `qa-backend` | Validates NestJS: services, resolvers, GraphQL schema, listeners, tests |
 
+### Architecture (2 agents)
+
+| Agent | What it does |
+|-------|-------------|
+| `architecture-review` | Reviews excessive coupling, cycles, and layer violations before merge |
+| `architecture-adr` | Generates Architecture Decision Records from a design decision's context |
+
+### Security (2 agents)
+
+| Agent | What it does |
+|-------|-------------|
+| `security-review` | Audits generated code against OWASP Top 10 patterns and leaked credentials |
+| `security-deps` | Runs a dependency audit and proposes a severity-prioritized remediation plan |
+
 ---
 
 ## Skills Library
@@ -310,14 +324,16 @@ Skills are the tools agents call during the agentic loop. All operate within `cw
 | Category | Subpath | Skills |
 |----------|---------|--------|
 | Filesystem | `/skills/fs` | `read-file`, `write-file`, `list-directory` |
-| Code | `/skills/code` | `search-code` (text/regex across TypeScript files) |
+| Code | `/skills/code` | `search-code`, `analyze-ci-config`, `analyze-error-logs`, `find-unused-exports` |
 | UX | `/skills/ux` | `audit-accessibility` (heuristic a11y scan of TSX) |
-| Git | `/skills/git` | `git-status`, `git-diff`, `git-log`, `git-commit-message` |
+| Git | `/skills/git` | `git-status`, `git-diff`, `git-log`, `git-commit-message`, `generate-changelog` |
 | HTTP | `/skills/http` | `http-request` (Bearer, Basic, OAuth2 client-credentials) |
 | Multimodal | `/skills/multimodal` | `analyze-image` (screenshots, diagrams, mockups) |
-| Backend | `/skills/backend` | `find-code-pattern`, `analyze-nestjs-module`, `analyze-dynamo-schema`, `analyze-graphql-schema` |
-| Frontend | `/skills/frontend` | `find-component-pattern`, `analyze-component`, `analyze-module-structure` |
-| QA | `/skills/qa` | `find-test-pattern`, `analyze-test-coverage` |
+| Backend | `/skills/backend` | `find-code-pattern`, `analyze-nestjs-module`, `analyze-dynamo-schema`, `analyze-graphql-schema`, `analyze-api-contract`, `analyze-migration-safety` |
+| Frontend | `/skills/frontend` | `find-component-pattern`, `analyze-component`, `analyze-module-structure`, `analyze-bundle-size` |
+| QA | `/skills/qa` | `find-test-pattern`, `analyze-test-coverage`, `run-tests`, `generate-test-stub` |
+| Security | `/skills/security` | `audit-dependencies`, `scan-secrets`, `scan-owasp-patterns`, `generate-security-report` |
+| Architecture | `/skills/architecture` | `analyze-dependency-graph`, `generate-adr` |
 
 ---
 
@@ -652,7 +668,9 @@ interface SessionId {
 @ftarganski/omni-ai/skills/multimodal  ← analyze-image
 @ftarganski/omni-ai/skills/backend    ← analyze-dynamo-schema, analyze-graphql-schema…
 @ftarganski/omni-ai/skills/frontend   ← analyze-component, analyze-module-structure…
-@ftarganski/omni-ai/skills/qa         ← analyze-test-coverage, find-test-pattern
+@ftarganski/omni-ai/skills/qa         ← analyze-test-coverage, find-test-pattern…
+@ftarganski/omni-ai/skills/security     ← audit-dependencies, scan-secrets, scan-owasp-patterns, generate-security-report
+@ftarganski/omni-ai/skills/architecture ← analyze-dependency-graph, generate-adr
 @ftarganski/omni-ai/memory       ← SQLiteMemoryStore, SemanticMemoryStore, compactors, VectorIndex
 @ftarganski/omni-ai/history      ← HistoryStore, IHistoryParser, searchHistorySkill, showEventSkill
 @ftarganski/omni-ai/mcp          ← createMcpServer, connectMcpSkills

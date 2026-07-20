@@ -834,29 +834,19 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 | `run-tests` | Executa a suíte de testes (jest/vitest) e reporta pass/fail por arquivo + coverage/coverage delta |
 | `generate-test-stub` | Gera esqueleto de teste a partir de função/componente, seguindo o padrão de um teste real existente |
 
-**Segurança (`@ftarganski/omni-ai/skills/security`)**
-
-| Skill | O que faz |
-|-------|-----------|
-| `audit-dependencies` | Roda auditoria de dependências (npm/pnpm audit) e resume vulnerabilidades por severidade |
-| `scan-secrets` | Varre texto/diff/arquivo em busca de padrões de credenciais antes do commit (achados sempre mascarados) |
-
 **Arquitetura (`@ftarganski/omni-ai/skills/architecture`)**
 
 | Skill | O que faz |
 |-------|-----------|
 | `analyze-dependency-graph` | Mapeia o grafo de dependências entre módulos e aponta acoplamento excessivo ou ciclos |
-
-**Arquitetura (`@ftarganski/omni-ai/skills/architecture`)**
-
-| Skill | O que faz |
-|-------|-----------|
 | `generate-adr` | Gera um Architecture Decision Record em markdown a partir de contexto/alternativas/decisão |
 
 **Segurança (`@ftarganski/omni-ai/skills/security`)**
 
 | Skill | O que faz |
 |-------|-----------|
+| `audit-dependencies` | Roda auditoria de dependências (npm/pnpm audit) e resume vulnerabilidades por severidade |
+| `scan-secrets` | Varre texto/diff/arquivo em busca de padrões de credenciais antes do commit (achados sempre mascarados) |
 | `scan-owasp-patterns` | Varre um arquivo/diff em busca de padrões de vulnerabilidade OWASP Top 10 |
 | `generate-security-report` | Consolida achados de audit-dependencies/scan-secrets/scan-owasp-patterns num relatório único |
 
@@ -1063,11 +1053,13 @@ omni-ai/
 │               ├── format.ts          # Output formatado (tokens, iterações, erros)
 │               └── config-path.ts     # Resolve caminho do omni-ai.yaml
 │
-├── agents/                            # Definições YAML dos agentes (21 agentes)
+├── agents/                            # Definições YAML dos agentes (25 agentes)
 │   ├── backend/                       # 7 agentes NestJS/TypeScript
 │   ├── frontend/                      # 5 agentes React/TypeScript
 │   ├── ux/                            # 5 agentes UX
-│   └── qa/                            # 4 agentes QA
+│   ├── qa/                            # 4 agentes QA
+│   ├── architecture/                  # 2 agentes de arquitetura
+│   └── security/                      # 2 agentes de segurança
 │
 ├── docs/                              # Documentação
 │   ├── history.md                     # @omni-ai/history — schema, IHistoryParser, scope por projeto
@@ -1504,13 +1496,13 @@ O script cria a branch `release/x.x.x`, commita o bump de versão e abre o PR pa
 - [x] provider-anthropic — adapter completo com mapeamento de tipos, tool use e streaming
 - [x] provider-openai — cobre OpenAI, GitHub Copilot, Groq, Ollama e qualquer endpoint OpenAI-compatible
 - [x] provider-google — adapter Google Gemini com chat, vision e embeddings
-- [x] skills — 20 skills em 8 subpaths: fs, code, ux, git, http, multimodal, backend, frontend, qa
+- [x] skills — 35 skills em 11 subpaths: fs, code, ux, git, http, multimodal, backend, frontend, qa, security, architecture
 - [x] history — `@omni-ai/history`: import/normalização/busca de histórico de outros harnesses (Claude Code, Codex), com isolamento por projeto (scope) e 2 skills MCP
 - [x] cli — `omni run`, `omni list`, `omni chain`, `omni init`, `omni new`, `omni serve`, `omni watch`, `omni eval`, `omni export`, `omni mcp serve`, `omni history sources|import|search|show|locate|doctor`
 
 **Core**
 - [x] Bootstrap `createRuntime()` — API de alto nível para uso programático
-- [x] 21 agentes prontos — backend (7), frontend (5), ux (5), qa (4)
+- [x] 25 agentes prontos — backend (7), frontend (5), ux (5), qa (4), arquitetura (2), segurança (2)
 - [x] Herança de provider/modelo — agentes herdam do config, podem sobrescrever
 - [x] Agentes inline — definição direta no `omni-ai.yaml`
 - [x] Streaming de tokens em tempo real
