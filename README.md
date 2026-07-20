@@ -761,6 +761,7 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 | `search-code` | Busca texto ou regex em arquivos TypeScript/TSX |
 | `analyze-ci-config` | Lê um workflow de CI e sinaliza gaps (cache, timeout, steps duplicados) |
 | `analyze-error-logs` | Correlaciona um stack trace com o código-fonte real para apontar a causa provável |
+| `find-unused-exports` | Detecta exports nunca referenciados em outro arquivo do diretório/monorepo |
 
 **UX (`@ftarganski/omni-ai/skills/ux`)**
 
@@ -798,6 +799,8 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 | `analyze-nestjs-module` | Analisa estrutura de módulos NestJS |
 | `analyze-dynamo-schema` | Analisa schemas DynamoDB/TableService |
 | `analyze-graphql-schema` | Analisa schemas GraphQL |
+| `analyze-api-contract` | Compara schema OpenAPI/GraphQL declarado contra a implementação — rotas não documentadas e campos órfãos |
+| `analyze-migration-safety` | Revisa uma migration em busca de operações bloqueantes ou irreversíveis em tabelas grandes |
 
 **Frontend (`@ftarganski/omni-ai/skills/frontend`)**
 
@@ -806,6 +809,7 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 | `find-component-pattern` | Localiza padrões em componentes React/TSX |
 | `analyze-component` | Analisa props, hooks e estrutura de componentes |
 | `analyze-module-structure` | Analisa a estrutura de módulos frontend |
+| `analyze-bundle-size` | Lê um metafile do bundler e reporta os maiores contribuintes de tamanho, para sugerir code-splitting |
 
 **QA (`@ftarganski/omni-ai/skills/qa`)**
 
@@ -813,6 +817,15 @@ As skills são as ferramentas que os agentes podem chamar durante o loop agentic
 |-------|-----------|
 | `find-test-pattern` | Localiza padrões em arquivos de teste |
 | `analyze-test-coverage` | Analisa cobertura de testes por módulo |
+| `run-tests` | Executa a suíte de testes (jest/vitest) e reporta pass/fail por arquivo + coverage/coverage delta |
+| `generate-test-stub` | Gera esqueleto de teste a partir de função/componente, seguindo o padrão de um teste real existente |
+
+**Segurança (`@ftarganski/omni-ai/skills/security`)**
+
+| Skill | O que faz |
+|-------|-----------|
+| `audit-dependencies` | Roda auditoria de dependências (npm/pnpm audit) e resume vulnerabilidades por severidade |
+| `scan-secrets` | Varre texto/diff/arquivo em busca de padrões de credenciais antes do commit (achados sempre mascarados) |
 
 **Arquitetura (`@ftarganski/omni-ai/skills/architecture`)**
 
