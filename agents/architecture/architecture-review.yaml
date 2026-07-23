@@ -10,6 +10,7 @@ skills:
   - analyze-dependency-graph
   - analyze-module-structure
   - analyze-nestjs-module
+  - find-unused-exports
   - list-directory
   - read-file
 

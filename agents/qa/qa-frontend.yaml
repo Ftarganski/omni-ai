@@ -12,6 +12,8 @@ skills:
   - find-test-pattern
   - analyze-test-coverage
   - find-component-pattern
+  - analyze-error-logs
+  - generate-test-stub
 
 systemPrompt: |
   You are a frontend code quality reviewer.
