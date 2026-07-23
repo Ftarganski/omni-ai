@@ -12,6 +12,7 @@ skills:
   - find-code-pattern
   - analyze-graphql-schema
   - analyze-nestjs-module
+  - analyze-api-contract
   - write-file
 
 systemPrompt: |

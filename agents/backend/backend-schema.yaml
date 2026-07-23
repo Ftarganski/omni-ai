@@ -11,6 +11,7 @@ skills:
   - write-file
   - find-code-pattern
   - analyze-dynamo-schema
+  - analyze-migration-safety
   - write-file
 
 systemPrompt: |

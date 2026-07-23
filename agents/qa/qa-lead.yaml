@@ -15,6 +15,9 @@ skills:
   - git-diff
   - git-log
   - git-commit-message
+  - analyze-ci-config
+  - generate-changelog
+  - run-tests
 
 systemPrompt: |
   You are the QA lead for a full-stack TypeScript monorepo.

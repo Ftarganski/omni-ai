@@ -12,6 +12,8 @@ skills:
   - find-test-pattern
   - analyze-test-coverage
   - analyze-dynamo-schema
+  - analyze-error-logs
+  - generate-test-stub
 
 systemPrompt: |
   You are a backend code quality reviewer for NestJS monorepos.

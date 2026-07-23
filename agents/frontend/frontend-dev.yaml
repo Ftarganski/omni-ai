@@ -14,6 +14,7 @@ skills:
   - find-component-pattern
   - analyze-component
   - analyze-module-structure
+  - analyze-bundle-size
   - write-file
 
 systemPrompt: |
